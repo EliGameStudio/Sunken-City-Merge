@@ -2500,7 +2500,7 @@ function bakeBG(){
 /* ================= ГЕОМЕТРИЯ ЭКРАНА ================= */
 var HUD_H=126, COLS=6, ROWS=8, CELL=80, BX=30, BY=188;
 var BOARD_W=COLS*CELL, BOARD_H=ROWS*CELL, BOARD_B=BY+BOARD_H;   // 828
-var VERSION='v5.1';
+var VERSION='v5.4';
 
 var BTN={
   nav_game :{x:10, y:898, w:124, h:52, label:'DIVE'},
@@ -2514,7 +2514,7 @@ var BTN={
   restore  :{x:290,y:792, w:210, h:46, label:'RESTORE'},
   worlds   :{x:14, y:226, w:165, h:42, label:'WORLDS'},
   achs     :{x:187,y:226, w:166, h:42, label:'AWARDS'},
-  closeach :{x:180,y:846, w:180, h:44, label:'CLOSE'},
+  closeach :{x:180,y:854, w:180, h:40, label:'CLOSE'},
   event    :{x:326,y:6,   w:96,  h:32, label:'EVENT'},
   closeevt :{x:180,y:836, w:180, h:46, label:'CLOSE'},
   shopPrev :{x:14, y:824, w:70,  h:46, label:'<'},
@@ -2529,6 +2529,10 @@ var BTN={
   closedet :{x:180,y:812, w:180, h:52, label:'CLOSE'},
   storyok  :{x:150,y:630, w:240, h:56, label:'CONTINUE'},
   giftok   :{x:150,y:690, w:240, h:56, label:'GOT IT'},
+  help     :{x:14, y:280, w:512, h:38, label:'HOW TO PLAY'},
+  helpprev :{x:24, y:826, w:110, h:50, label:'<'},
+  helpnext :{x:406,y:826, w:110, h:50, label:'>'},
+  helpdone :{x:154,y:826, w:232, h:50, label:'CLOSE'},
   namedone :{x:170,y:560, w:200, h:60, label:'START'}
 };
 function inBtn(b,x,y){ return x>=b.x&&x<=b.x+b.w&&y>=b.y&&y<=b.y+b.h; }
@@ -2613,6 +2617,11 @@ function speechFor(ch, phase){
 var S=null;
 function newFlags(n){ var a=[]; for(var i=0;i<n;i++) a.push(0); return a; }
 function lenOf(t,d){ return (t&&t.length)?t.length:d; }
+function regLen(field, fallback){                 // длина таблицы активного региона
+  var r=REGIONS[(S&&S.region)||0]; if(!r||!r[field]) r=REGIONS[0];
+  var t=r?r[field]:null;
+  return (t&&t.length)?t.length:fallback;
+}
 function baseState(){
   return {
     ver:2, name:'', screen:'name', coins:120, xp:0, lvl:1,
@@ -2620,13 +2629,13 @@ function baseState(){
     region:0, regionsDone:[], byRegion:{},
     chapter:0, chapReq:[0,0,0], built:[false,false,false,false,false,false],
     orders:[], ordersDone:0,
-    relics:newFlags(lenOf(A_RELICS,12)),   // 0 не найдена, 1 в руках
-    curios:newFlags(lenOf(A_CURIOS,8)), curioOpen:-1,
+    relics:newFlags(regLen('relics',12)),   // 0 не найдена, 1 в руках
+    curios:newFlags(regLen('curios',18)), curioOpen:-1,
     expPts:0, expStep:0, fundLevel:0,
     evCycle:-1, evPts:0, evStep:0, seasonal:0,
-    owned:newFlags(lenOf(A_DECOR,8)),
+    owned:newFlags(regLen('decor',13)),
     plots:[[],[],[],[],[],[]],
-    storyOpen:-1, relicOpen:-1, detail:-1, diagOpen:false, shopPage:0, curioPage:0, giftDone:0, giftOpen:0,
+    storyOpen:-1, relicOpen:-1, detail:-1, diagOpen:false, shopPage:0, curioPage:0, giftDone:0, giftOpen:0, helpPage:0,
     say:null, sayShown:{}, sel:null, mute:false, tip:0, regenAt:0,
     dive:null,
     stats:{merges:0, spawns:0, sold:0, relics:0, dives:0, parts:0,
@@ -3475,6 +3484,7 @@ function findCurio(src){
 }
 function curiosFound(){ var n=0; for(var i=0;i<S.curios.length;i++) if(S.curios[i]) n++; return n; }
 function speak(ch, phase){
+  if(!S||!S.name) return;                       // до ввода имени реплик нет
   var line=speechFor(ch,phase);
   if(!line) return;
   var key=ch+'_'+(phase?1:0);
@@ -3575,6 +3585,11 @@ function sanitize(o){
   }
   if(Array.isArray(o.relics)) for(i=0;i<b.relics.length;i++) b.relics[i]=((+o.relics[i])>0)?1:0;
   if(Array.isArray(o.curios)) for(i=0;i<b.curios.length;i++) b.curios[i]=((+o.curios[i])>0)?1:0;
+  /* Массивы обязаны быть полной длины: короткий массив из старого сейва
+     молча терял находки выше восьмой. */
+  while(b.curios.length<regLen('curios',18)) b.curios.push(0);
+  while(b.relics.length<regLen('relics',12)) b.relics.push(0);
+  while(b.owned.length<regLen('decor',13)) b.owned.push(0);
   /* Спасение ТЕКУЩЕГО города: игрок уже вернулся в него до починки, и пустое
      состояние успело записаться в сейв. Если город числится пройденным, а на
      деле пуст — восстанавливаем завершённое состояние. */
@@ -3599,6 +3614,7 @@ function sanitize(o){
   b.evStep=Math.max(0,Math.min(20,(+o.evStep)||0));
   b.seasonal=o.seasonal?1:0;
   b.giftDone=o.giftDone?1:0;
+  b.helpPage=Math.max(0,Math.min(9,(+o.helpPage)||0));
   /* Архив прогресса по городам. Раньше он терялся при загрузке, из-за чего
      возврат в пройденный город отдавал пустое состояние. */
   if(o.byRegion && typeof o.byRegion==='object'){
@@ -3731,7 +3747,7 @@ function load(){
   }
   applyRegion();
   placeGenerators(); fillOrder();
-  giveStarterGift();
+  if(S.name) giveStarterGift();      // на стартовом экране подарок не показываем
   speak(S.chapter,0);
 }
 
@@ -3792,13 +3808,23 @@ var ACHS=[
   {id:'c4',  name:'Furnished',        desc:'Place 8 pieces of interior',          need:8,     cur:function(){var n=0,i;for(i=0;i<S.plots.length;i++)n+=S.plots[i].length;return n;}},
   {id:'c5',  name:'Ensemble',         desc:'Complete an ensemble at a site',      need:1,     cur:function(){var n=0,i;for(i=0;i<S.plots.length;i++)n+=setsAt(i).length;return n;}},
   {id:'c6',  name:'Grand Design',     desc:'Complete four ensembles',             need:4,     cur:function(){var n=0,i;for(i=0;i<S.plots.length;i++)n+=setsAt(i).length;return n;}},
-  {id:'c7',  name:'Populous',         desc:'Bring 100 people back',               need:100,   cur:function(){return population();}},
+  {id:'c7',  name:'Populous',         desc:'Bring 80 people back to one city',    need:80,    cur:function(){return population();}},
   {id:'c8',  name:'Patron',           desc:'Fund 10 expeditions',                 need:10,    cur:function(){return S.stats.fundBought||0;}},
   /* долгая игра */
   {id:'l1',  name:'Level Ten',        desc:'Reach level 10',                      need:10,    cur:function(){return S.lvl;}},
   {id:'l2',  name:'Level Twenty',     desc:'Reach level 20',                      need:20,    cur:function(){return S.lvl;}},
   {id:'l3',  name:'Two Cities',       desc:'Recover two cities',                  need:2,     cur:function(){return S.regionsDone.length;}},
-  {id:'l4',  name:'Season Keeper',    desc:'Claim a seasonal relic',              need:1,     cur:function(){return S.seasonal?1:0;}}
+  {id:'l4',  name:'Season Keeper',    desc:'Claim a seasonal relic',              need:1,     cur:function(){return S.seasonal?1:0;}},
+  {id:'l5',  name:'Salt and Water',   desc:'Make progress in both cities',        need:2,     cur:function(){
+     var n=0, i2;
+     if(S.stats.parts>0) n++;
+     if(S.byRegion) for(i2 in S.byRegion){ if(S.byRegion[i2] && S.byRegion[i2].chapter>0){ n++; break; } }
+     return Math.min(2,n); }},
+  {id:'l6',  name:'Deep Archive',     desc:'Hold 24 relics across all cities',    need:24,    cur:function(){
+     var n=relicsFound(), i2, j2;
+     if(S.byRegion) for(i2 in S.byRegion){ var sl=S.byRegion[i2];
+       if(sl && sl.relics) for(j2=0;j2<sl.relics.length;j2++) if(sl.relics[j2]) n++; }
+     return n; }}
 ];
 function achDone(i){ return !!(S.achs && S.achs[i]); }
 function achCount(){ var n=0,i; for(i=0;i<ACHS.length;i++) if(achDone(i)) n++; return n; }
@@ -3828,15 +3854,24 @@ function checkAchievements(){
 /* ================= ОБЛАЧНЫЙ РЕЙТИНГ ================= */
 var FB_URL='';                     // <— сюда вставить https://ваш-проект.firebaseio.com
 var SYNC='Offline', TOPLIST=[], topOpen=false;
-function pushScore(){
-  if(!FB_URL||!S.name) return;
+var LAST_PUSH=0, LAST_PUSHED_SCORE=-1, PUSH_MIN_MS=60000;
+function pushScore(force){
+  if(!FB_URL||!S.name) return false;
+  var sc=cityScore(), now=Date.now();
+  if(!force){
+    if(sc<=LAST_PUSHED_SCORE) return false;          // счёт не вырос — молчим
+    if(now-LAST_PUSH<PUSH_MIN_MS) return false;      // не чаще раза в минуту
+  }
+  LAST_PUSH=now; LAST_PUSHED_SCORE=sc;
   SYNC='Syncing';
   try{
     fetch(FB_URL+'/scores_sunken1.json',{method:'POST',cache:'no-store',
-      body:JSON.stringify({name:S.name.slice(0,12), score:cityScore(), lvl:S.lvl, ts:Date.now()})})
+      body:JSON.stringify({name:S.name.slice(0,12), score:sc, lvl:S.lvl,
+                           cities:S.regionsDone.length, ts:now})})
     .then(function(r){ SYNC=r.ok?'Synced':'Offline'; })
     .catch(function(){ SYNC='Offline'; });
   }catch(e){ SYNC='Offline'; }
+  return true;
 }
 function fetchTop(){
   if(!FB_URL){ TOPLIST=[]; return; }
@@ -3845,6 +3880,13 @@ function fetchTop(){
     .then(function(o){
       var a=[];
       for(var k in o) if(o[k]&&typeof o[k]==='object') a.push(o[k]);
+      var best={};
+      for(var q=0;q<a.length;q++){                    // один игрок — одна строка, лучшая
+        var nm=String(a[q].name||'').slice(0,12);
+        if(!nm) continue;
+        if(!best[nm]||(+a[q].score||0)>(+best[nm].score||0)) best[nm]=a[q];
+      }
+      a=[]; for(var nm2 in best) a.push(best[nm2]);
       a.sort(function(x,y){return (y.score||0)-(x.score||0);});
       TOPLIST=a.slice(0,10); SYNC='Synced';
     }).catch(function(){ SYNC='Offline'; });
@@ -4184,7 +4226,7 @@ function cellSprite(){
 }
 
 /* ================= ОТРИСОВКА ================= */
-var TIME=0, drag=null, DETAIL_SLOTS=[], worldsOpen=false, eventOpen=false, achOpen=false;
+var TIME=0, drag=null, DETAIL_SLOTS=[], worldsOpen=false, eventOpen=false, achOpen=false, helpOpen=false;
 function cellXY(i){ return {x:BX+(i%COLS)*CELL, y:BY+((i/COLS)|0)*CELL}; }
 function itemSpriteFor(it){
   if(it.gen!==undefined) return genSprite(it.gen);
@@ -4436,7 +4478,7 @@ function drawParts(g){
 }
 
 /* ---------- ЭКРАН ГОРОДА ---------- */
-function siteCard(i){ return {x:20+(i%2)*250, y:284+((i/2)|0)*148, w:230, h:138}; }
+function siteCard(i){ return {x:20+(i%2)*250, y:326+((i/2)|0)*130, w:230, h:122}; }
 function chipBox(n){ return {x:20+(n%7)*72, y:744+((n/7)|0)*68, w:66, h:60}; }
 function drawCity(g){
   panel(g,14,132,512,84,'rgba(6,34,54,0.92)');
@@ -4446,7 +4488,8 @@ function drawCity(g){
         +'  ·  people '+population(), 26, 192, 15, '#9df0ff');
   button(g,BTN.worlds,false);
   button(g,BTN.achs,false,'rgba(76,60,24,0.95)');
-  text(g, achCount()+'/'+ACHS.length, BTN.achs.x+BTN.achs.w/2, BTN.achs.y+BTN.achs.h+9, 11, '#ffd487','center');
+  button(g,BTN.help,false,'rgba(28,86,110,0.95)');
+  text(g, achCount()+'/'+ACHS.length, BTN.achs.x+BTN.achs.w-8, BTN.achs.y+BTN.achs.h-6, 10, '#ffd487','right');
   button(g,BTN.top,false);
   var i,j;
   for(i=0;i<6;i++){
@@ -4734,6 +4777,112 @@ function drawEvent(g){
   text(g,'Points come from playing: merges, parts, orders, dives.', 44, 806, 12, '#bfe9f5');
   button(g,BTN.closeevt,false);
 }
+var HELP_PAGES=6;
+function drawHelp(g){
+  scrim(g);
+  var pg=Math.max(0,Math.min(HELP_PAGES-1,S.helpPage||0));
+  panel(g,16,150,508,656,'rgba(6,34,54,0.98)');
+  text(g,'HOW TO PLAY', 270, 186, 22, '#ffe27a','center');
+  text(g,(pg+1)+' / '+HELP_PAGES, 270, 210, 12, '#9df0ff','center');
+  var y0=240;
+
+  if(pg===0){                                   /* СЛИЯНИЕ */
+    text(g,'MERGE TWO OF A KIND', 270, y0, 17, '#ffffff','center');
+    var yy=y0+40;
+    g.drawImage(itemSprite(0,2),0,0,IS,IS, 78, yy, 84,84);
+    g.drawImage(itemSprite(0,2),0,0,IS,IS, 176, yy, 84,84);
+    text(g,'+', 168, yy+46, 26, '#ffd487','center');
+    text(g,'\u2192', 292, yy+46, 26, '#ffd487','center');
+    g.drawImage(itemSprite(0,3),0,0,IS,IS, 330, yy-6, 96,96);
+    wrap(g,'Drag one find onto an identical one. They become a single find of the next tier.',
+         44, yy+130, 15, '#eafcff', 40, 24);
+    wrap(g,'The board is small on purpose. Merging is how you make room.',
+         44, yy+200, 14, '#bfe9f5', 42, 22);
+    for(var i=0;i<6;i++){                        // лесенка тиров
+      g.drawImage(itemSprite(0,1+i),0,0,IS,IS, 42+i*76, yy+250, 62,62);
+      text(g,'t'+(1+i), 73+i*76, yy+320, 11, '#7fa8bc','center');
+    }
+  }
+  if(pg===1){                                   /* ГЕНЕРАТОРЫ И ЗАРЯДЫ */
+    text(g,'SOURCES GIVE YOU FINDS', 270, y0, 17, '#ffffff','center');
+    g.drawImage(genSprite(0),0,0,IS,IS, 62, y0+34, 104,104);
+    text(g,'\u2192', 190, y0+90, 24, '#ffd487','center');
+    g.drawImage(itemSprite(0,1),0,0,IS,IS, 228, y0+42, 84,84);
+    g.drawImage(itemSprite(1,1),0,0,IS,IS, 320, y0+42, 84,84);
+    g.drawImage(itemSprite(3,1),0,0,IS,IS, 412, y0+42, 84,84);
+    wrap(g,'Tap a source to pull out a find. Each tap costs one charge.',
+         44, y0+164, 15, '#eafcff', 40, 24);
+    g.fillStyle='rgba(3,24,38,0.9)'; g.fillRect(44,y0+220,432,20);
+    g.fillStyle='#4fd6a0'; g.fillRect(46,y0+222,260,16);
+    text(g,'charges', 56, y0+230, 13, '#0b1b2a');
+    wrap(g,'Charges come back on their own, about one per minute per source \u2014 even while the game is closed.',
+         44, y0+256, 14, '#bfe9f5', 42, 22);
+    wrap(g,'Empty sources are not a wall. Merge what is already on the board, or use a Tool.',
+         44, y0+326, 14, '#bfe9f5', 42, 22);
+  }
+  if(pg===2){                                   /* ИНСТРУМЕНТЫ */
+    text(g,'TOOLS DO TWO THINGS', 270, y0, 17, '#ffffff','center');
+    g.drawImage(itemSprite(4,3),0,0,IS,IS, 46, y0+30, 88,88);
+    text(g,'ON A SOURCE', 150, y0+58, 14, '#ffd487');
+    wrap(g,'Drop a Tool on a source to refill its charges at once.',
+         150, y0+82, 13, '#bfe9f5', 30, 20);
+    g.drawImage(heroSprite(),0,0,HW,HH, 52, y0+152, 74,104);
+    text(g,'ON THE DIVER', 150, y0+178, 14, '#ffd487');
+    wrap(g,'Tools of tier 3 and up are diving gear. He goes down and brings back a relic.',
+         150, y0+202, 13, '#bfe9f5', 30, 20);
+    wrap(g,'Tools arrive from orders, from dives that found nothing, and rarely from merges.',
+         44, y0+296, 14, '#eafcff', 42, 22);
+  }
+  if(pg===3){                                   /* ПОГРУЖЕНИЕ */
+    text(g,'THE DIVER AND HIS TIME', 270, y0, 17, '#ffffff','center');
+    g.drawImage(heroPortrait(),0,0,96,96, 44, y0+28, 100,100);
+    wrap(g,'Drop a Tool (tier 3+) or a big find (tier 6+) on the diver bar above the board.',
+         160, y0+40, 14, '#eafcff', 30, 22);
+    g.fillStyle='rgba(3,24,38,0.9)'; g.fillRect(44,y0+146,432,18);
+    g.fillStyle='#4fd6a0'; g.fillRect(46,y0+148,180,14);
+    text(g,'back in 45s', 470, y0+153, 12, '#ffd487','right');
+    wrap(g,'A dive takes real time: 30 seconds at the lowest gear, 15 seconds more per tier. It keeps running while the game is closed.',
+         44, y0+180, 14, '#bfe9f5', 42, 22);
+    wrap(g,'Better gear means a better chance of a relic. Relics carry the story and live in the MUSEUM.',
+         44, y0+274, 14, '#bfe9f5', 42, 22);
+  }
+  if(pg===4){                                   /* ЗАКАЗЫ И ГЛАВЫ */
+    text(g,'CARDS UNDER THE BOARD', 270, y0, 17, '#ffffff','center');
+    var b1={x:44,y:y0+34,w:210,h:72}, b2={x:276,y:y0+34,w:210,h:72};
+    panel(g,b1.x,b1.y,b1.w,b1.h,'rgba(10,58,84,0.94)');
+    g.drawImage(itemSprite(1,5),0,0,IS,IS, b1.x+2,b1.y+4, 62,62);
+    text(g,'CITY PART', b1.x+70, b1.y+22, 13, '#ffffff');
+    text(g,'1/2', b1.x+70, b1.y+48, 18, '#ffe27a');
+    panel(g,b2.x,b2.y,b2.w,b2.h,'rgba(58,42,20,0.92)');
+    g.drawImage(itemSprite(2,3),0,0,IS,IS, b2.x+2,b2.y+4, 62,62);
+    text(g,'ORDER', b2.x+70, b2.y+22, 13, '#ffd487');
+    text(g,'+240', b2.x+70, b2.y+48, 18, '#ffffff');
+    wrap(g,'Blue cards are what the city needs to rebuild a landmark. Drag the matching find onto the card.',
+         44, y0+126, 14, '#eafcff', 42, 22);
+    wrap(g,'Brown cards are side orders. They pay coins and hand out Tools \u2014 and they never ask for what the chapter needs.',
+         44, y0+206, 14, '#bfe9f5', 42, 22);
+    wrap(g,'Four cards are always filled, so there is always something you can hand in right now.',
+         44, y0+300, 14, '#bfe9f5', 42, 22);
+  }
+  if(pg===5){                                   /* ГОРОД, МУЗЕЙ, ГОРОДА */
+    text(g,'WHERE IT ALL GOES', 270, y0, 17, '#ffffff','center');
+    g.drawImage(monumentSprite(0,true),0,0,96,96, 44, y0+28, 92,92);
+    text(g,'CITY', 150, y0+52, 14, '#ffd487');
+    wrap(g,'Landmarks you rebuild. Buy interior in the SHOP and place it \u2014 each site then works a little better.',
+         150, y0+74, 13, '#bfe9f5', 30, 20);
+    g.drawImage(relicSprite(0),0,0,IS,IS, 50, y0+156, 84,84);
+    text(g,'MUSEUM', 150, y0+180, 14, '#ffd487');
+    wrap(g,'Relics and small finds, each with its own story about what happened here.',
+         150, y0+202, 13, '#bfe9f5', 30, 20);
+    text(g,'FIVE CITIES', 44, y0+280, 14, '#ffd487');
+    wrap(g,'Restore a city fully and the next one opens. Each has its own chains, story and relics.',
+         44, y0+302, 13, '#bfe9f5', 42, 20);
+  }
+
+  button(g,BTN.helpprev,false,'rgba(20,80,112,0.95)');
+  button(g,BTN.helpnext,false,'rgba(20,80,112,0.95)');
+  button(g,BTN.helpdone,false,'rgba(30,120,90,0.95)');
+}
 function drawGift(g){
   scrim(g);
   panel(g,20,206,500,510,'rgba(6,44,64,0.98)');
@@ -4764,12 +4913,12 @@ function drawSeasonalStory(g){
   wrap(g, SEASONAL.note, 52, 452, 16, '#eafcff', 40, 27);
   button(g,BTN.curiook,false);
 }
-function achRow(i){ return {x:24, y:196+i*26, w:492, h:24}; }
+function achRow(i){ return {x:24, y:194+i*24, w:492, h:22}; }
 function drawAchs(g){
   scrim(g);
   panel(g,14,132,512,760,'rgba(4,26,42,0.97)');
-  text(g,'ACHIEVEMENTS', 270, 162, 22, '#ffe27a','center');
-  text(g, achCount()+' of '+ACHS.length+' earned', 270, 184, 12, '#9df0ff','center');
+  text(g,'ACHIEVEMENTS', 270, 160, 21, '#ffe27a','center');
+  text(g, achCount()+' of '+ACHS.length+' earned', 270, 180, 11, '#9df0ff','center');
   for(var i=0;i<ACHS.length;i++){
     var r=achRow(i), pr=achProgress(i), a=ACHS[i];
     g.fillStyle=pr.done?'rgba(28,86,64,0.85)':'rgba(20,34,48,0.8)';
@@ -4778,9 +4927,9 @@ function drawAchs(g){
       g.fillStyle='rgba(90,150,190,0.25)';
       g.fillRect(r.x,r.y,Math.round(r.w*Math.min(1,pr.have/pr.need)),r.h);
     }
-    text(g,(pr.done?'\u2713 ':'')+a.name, r.x+8, r.y+12, 13, pr.done?'#9bf7a8':'#ffffff');
-    text(g, a.desc, r.x+150, r.y+12, 11, pr.done?'#bfe9f5':'#8fb8cc');
-    text(g, pr.done?'done':(pr.have+'/'+pr.need), r.x+r.w-8, r.y+12, 11, pr.done?'#9bf7a8':'#ffd487','right');
+    text(g,(pr.done?'\u2713 ':'')+a.name, r.x+8, r.y+11, 12, pr.done?'#9bf7a8':'#ffffff');
+    text(g, a.desc, r.x+150, r.y+11, 10, pr.done?'#bfe9f5':'#8fb8cc');
+    text(g, pr.done?'done':(pr.have+'/'+pr.need), r.x+r.w-8, r.y+11, 10, pr.done?'#9bf7a8':'#ffd487','right');
   }
   button(g,BTN.closeach,false);
 }
@@ -4871,7 +5020,7 @@ function render(){
   drawHUD(g);
   drawNav(g);
   drawDragged(g);
-  if(S.screen==='game') drawSpeech(g);
+  if(S.screen==='game' && !S.giftOpen) drawSpeech(g);
   if(S.screen==='city'){                       // оверлеи поверх шапки, а не под ней
     if(S.detail>=0) drawDetail(g);
     if(worldsOpen) drawWorlds(g);
@@ -4886,6 +5035,7 @@ function render(){
   if(S.curioOpen>=0) drawCurioStory(g);
   if(S.curioOpen===-2) drawSeasonalStory(g);
   if(S.giftOpen) drawGift(g);
+  if(helpOpen) drawHelp(g);
   drawAchFX(g);
   drawTrans(g);
 }
@@ -4902,8 +5052,17 @@ function boardHit(x,y){
 }
 function onDown(x,y){
   ensureAudio();
-  if(S.say && S.screen==='game' && y>=596 && y<=712){ S.say=null; return; }
-  if(S.giftOpen){ if(inBtn(BTN.giftok,x,y)){ S.giftOpen=0; save(); } return; }
+  if(S.say && !S.giftOpen && S.screen==='game' && y>=596 && y<=712){ S.say=null; return; }
+  if(helpOpen){
+    if(inBtn(BTN.helpdone,x,y)){ helpOpen=false; save(); return; }
+    if(inBtn(BTN.helpprev,x,y)){ S.helpPage=((S.helpPage||0)+HELP_PAGES-1)%HELP_PAGES; save(); return; }
+    if(inBtn(BTN.helpnext,x,y)){ S.helpPage=((S.helpPage||0)+1)%HELP_PAGES; save(); return; }
+    return;
+  }
+  if(S.giftOpen){
+    if(inBtn(BTN.giftok,x,y)){ S.giftOpen=0; helpOpen=true; S.helpPage=0; save(); }
+    return;
+  }
   if(S.curioOpen===-2){ if(inBtn(BTN.curiook,x,y)){ S.curioOpen=-1; save(); } return; }
   if(eventOpen){ if(inBtn(BTN.closeevt,x,y)){ eventOpen=false; save(); } return; }
   if(S.curioOpen>=0){ if(inBtn(BTN.curiook,x,y)){ S.curioOpen=-1; save(); } return; }
@@ -4962,6 +5121,7 @@ function onDown(x,y){
       return;
     }
     if(achOpen){ if(inBtn(BTN.closeach,x,y)) achOpen=false; return; }
+    if(inBtn(BTN.help,x,y)){ helpOpen=true; S.helpPage=0; return; }
     if(inBtn(BTN.achs,x,y)){ achOpen=true; checkAchievements(); return; }
     if(inBtn(BTN.worlds,x,y)){ worldsOpen=true; return; }
     if(inBtn(BTN.top,x,y)){ topOpen=true; fetchTop(); return; }
@@ -5085,7 +5245,9 @@ function startGameFromName(){
   var nm='';
   try{ nm=window.prompt?(window.prompt('Your name (max 12):','Diver')||''):''; }catch(e){ nm=''; }
   S.name=(nm||'Diver').slice(0,12);
-  S.screen='game'; placeGenerators(); fillOrder(); save();
+  S.screen='game'; placeGenerators(); fillOrder();
+  giveStarterGift();                 // подарок и объяснение — после ввода имени
+  save();
 }
 function bindInput(){
   if(!cv.addEventListener) return;
@@ -5200,7 +5362,10 @@ window.__DG={
   genCap:genCap, spawnTier:spawnTier, nextBenefit:nextBenefit, tipText:tipText,
   buyDecor:buyDecor, attachToPlot:attachToPlot, detachFromPlot:detachFromPlot, cityScore:cityScore,
   shopPages:shopPages, shopPage:shopPage, shopItemAt:shopItemAt, SHOP_PER:SHOP_PER,
-  giveStarterGift:giveStarterGift,
+  giveStarterGift:giveStarterGift, HELP_PAGES:HELP_PAGES,
+  helpOpen:function(){ return helpOpen; }, setHelp:function(v){ helpOpen=!!v; },
+  pushScore:pushScore, fetchTop:fetchTop, FB_SET:function(u){ FB_URL=u; },
+  syncState:function(){ return SYNC; }, topList:function(){ return TOPLIST; },
   buyFund:buyFund, fundPrice:fundPrice, fundExpPts:fundExpPts, fundScore:fundScore,
   EVENTS:EVENTS, SEASONAL:SEASONAL, eventNow:eventNow, eventCycle:eventCycle,
   eventAdd:eventAdd, eventSync:eventSync, eventProgress:eventProgress, eventEndsIn:eventEndsIn,
@@ -5238,7 +5403,8 @@ window.__DG={
     nav:[BTN.nav_game,BTN.nav_city,BTN.nav_mus,BTN.nav_shop],
     plaques:[plaque(0),plaque(11)],
     cityHeader:{x:14,y:132,w:512,h:84},
-    cityButtons:[BTN.worlds,BTN.achs,BTN.top],
+    cityButtons:[BTN.worlds,BTN.achs,BTN.top], helpBtn:BTN.help,
+    helpNav:[BTN.helpprev,BTN.helpdone,BTN.helpnext],
     worldCards:[worldCard(0),worldCard(4)],
     sites:[siteCard(0),siteCard(1),siteCard(2),siteCard(3),siteCard(4),siteCard(5)],
     chipPanel:{x:14,y:726,w:512,h:158},
