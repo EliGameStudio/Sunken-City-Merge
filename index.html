@@ -1379,6 +1379,184 @@ function relicSprite(k){
   });
 }
 
+
+/* ================= СОБЫТИЕ: ДРЕВНИЕ ВОИТЕЛИ =================
+   Осколки доспеха падают во время события. Сливая их, игрок
+   собирает воина по частям: обломок -> пластина -> шлем -> щит ->
+   меч -> броня -> полный доспех. */
+var ARMOUR_NAMES=[
+  'Bronze Shard','Rivet Plate','Greave','Vambrace','Helm',
+  'Shield Boss','War Shield','Blade','Cuirass','Warden\u2019s Panoply'
+];
+function armourSprite(t){
+  return sprite('arm'+t, IS, IS, function(c,g){
+    var S=shp(g), rnd=mulberry32(6100+t), cx=43, cy=44, i;
+    var B=RA.brass, T=RA.steel, D=RA.wood, G=RA.gold, R2=RA.ruby, L=RA.glass, P=RA.pearl;
+
+    function helm(x,y,s){                              // шлем с гребнем и прорезью
+      g.ell(x,y,Math.round(11*s),Math.round(12*s),B(3));
+      g.ell(x-Math.round(2*s),y-Math.round(2*s),Math.round(8*s),Math.round(9*s),B(5));
+      g.rp(x-Math.round(11*s),y,Math.round(22*s),Math.round(4*s),B(1));
+      g.rp(x-Math.round(7*s),y-Math.round(1*s),Math.round(14*s),Math.round(3*s),T(0));
+      g.rp(x-Math.round(2*s),y+Math.round(3*s),Math.round(4*s),Math.round(9*s),B(2));
+      for(i=0;i<Math.round(7*s);i++)
+        g.rp(x-1, y-Math.round(13*s)-i, 3, 2, (i%2)?R2(4):R2(6));
+      g.px(x-Math.round(5*s), y-Math.round(6*s), B(7));
+    }
+    function shield(x,y,s){                            // круглый щит с умбоном
+      g.circ(x,y,Math.round(16*s),D(2));
+      g.circ(x,y,Math.round(14*s),D(3));
+      g.circ(x-1,y-1,Math.round(11*s),D(4));
+      for(i=0;i<8;i++){ var a=i/8*Math.PI*2;
+        g.rp(x+Math.round(Math.cos(a)*13*s)-2, y+Math.round(Math.sin(a)*13*s)-2, 4,4, B(3)); }
+      g.circ(x,y,Math.round(6*s),B(3)); g.circ(x-1,y-1,Math.round(4*s),B(5));
+      g.px(x-2,y-2,B(7));
+      for(i=0;i<Math.round(16*s);i++){                  // обод
+        var b=i/Math.round(16*s)*Math.PI*2;
+        g.px(x+Math.round(Math.cos(b)*16*s), y+Math.round(Math.sin(b)*16*s), B(1)); }
+    }
+    function blade(x,y,s){                             // меч клинком вверх
+      var h=Math.round(30*s);
+      g.poly([[x-Math.round(3*s),y],[x+Math.round(3*s),y],
+              [x+Math.round(3*s),y-h],[x,y-h-Math.round(6*s)],[x-Math.round(3*s),y-h]], T(3));
+      g.poly([[x-Math.round(1*s),y],[x+Math.round(1*s),y],[x,y-h-Math.round(4*s)]], T(6));
+      g.rp(x-Math.round(9*s),y,Math.round(18*s),Math.round(4*s),B(3));
+      g.rp(x-Math.round(9*s),y,Math.round(18*s),Math.round(2*s),B(6));
+      g.rp(x-Math.round(2*s),y+Math.round(4*s),Math.round(4*s),Math.round(10*s),D(3));
+      for(i=0;i<3;i++) g.rp(x-Math.round(2*s),y+Math.round(6*s)+i*3,Math.round(4*s),1,D(1));
+      g.circ(x,y+Math.round(15*s),Math.round(3*s),G(4));
+    }
+    function cuirass(x,y,s){                           // нагрудник
+      g.poly([[x-Math.round(15*s),y-Math.round(14*s)],[x+Math.round(15*s),y-Math.round(14*s)],
+              [x+Math.round(12*s),y+Math.round(10*s)],[x,y+Math.round(17*s)],
+              [x-Math.round(12*s),y+Math.round(10*s)]], B(3));
+      g.poly([[x-Math.round(11*s),y-Math.round(11*s)],[x-Math.round(2*s),y-Math.round(11*s)],
+              [x-Math.round(4*s),y+Math.round(8*s)],[x-Math.round(9*s),y+Math.round(5*s)]], B(5));
+      g.rp(x-Math.round(15*s),y-Math.round(14*s),Math.round(30*s),Math.round(3*s),B(6));
+      for(i=0;i<3;i++)
+        g.rp(x-Math.round(13*s),y-Math.round(6*s)+i*Math.round(6*s),Math.round(26*s),2,B(1));
+      for(i=0;i<4;i++){ g.px(x-Math.round(12*s)+i*Math.round(8*s), y-Math.round(12*s), B(7));
+                        g.px(x-Math.round(12*s)+i*Math.round(8*s), y+Math.round(8*s), B(0)); }
+      g.circ(x,y-Math.round(3*s),Math.round(4*s),R2(3));
+      g.circ(x-1,y-Math.round(4*s),Math.round(2*s),R2(6));
+    }
+
+    if(t===1){                                          // обломок бронзы
+      g.poly([[cx-11,cy+8],[cx-3,cy-10],[cx+10,cy-4],[cx+7,cy+9]], B(2));
+      g.poly([[cx-9,cy+6],[cx-3,cy-8],[cx+7,cy-3]], B(3));
+      g.poly([[cx-6,cy+2],[cx-2,cy-5],[cx+3,cy-1]], B(5));
+      for(i=0;i<4;i++) g.px(cx-7+i*4, cy+6-i, B(1));
+      g.px(cx-4,cy-4,B(7)); g.px(cx+8,cy+3,B(0));
+      g.px(cx+2,cy-7,B(6)); g.px(cx-8,cy+3,B(4)); g.px(cx+5,cy+6,G(4));
+      g.rp(cx-2,cy+1,3,2,B(0)); g.px(cx-6,cy-1,R2(3));
+      g.dith(cx-12,cy-11,24,22, B(2), rnd, 0.3);
+    }
+    if(t===2){                                          // пластина с заклёпками
+      g.rp(cx-14,cy-11,28,22,B(3)); g.rp(cx-14,cy-11,28,3,B(6));
+      g.rp(cx-14,cy+8,28,3,B(0)); g.rp(cx-14,cy-11,4,22,B(5));
+      for(i=0;i<4;i++){ g.circ(cx-10+i*7,cy-7,2,B(1)); g.px(cx-11+i*7,cy-8,B(7)); }
+      for(i=0;i<4;i++) g.circ(cx-10+i*7,cy+5,2,B(1));
+      g.rp(cx-14,cy-1,28,2,B(1)); g.rp(cx-14,cy-1,28,1,B(6));
+      g.px(cx-12,cy-9,B(7)); g.px(cx+12,cy+8,B(0));
+      for(i=0;i<3;i++) g.px(cx-8+i*8, cy+1, G(4));
+      g.px(cx+9,cy-6,R2(3));
+      g.dith(cx-14,cy-11,28,22, B(2), rnd, 0.28);
+    }
+    if(t===3){                                          // поножи
+      g.poly([[cx-9,cy-16],[cx+9,cy-16],[cx+7,cy+16],[cx-7,cy+16]], B(3));
+      g.poly([[cx-7,cy-14],[cx-1,cy-14],[cx-3,cy+14]], B(5));
+      for(i=0;i<5;i++) g.rp(cx-9+Math.round(i*0.4),cy-12+i*6,18-Math.round(i*0.8),2,B(1));
+      g.rp(cx-11,cy-18,22,4,B(2)); g.rp(cx-11,cy-18,22,1,B(6));
+      g.rp(cx-9,cy+16,18,4,B(0));
+      for(i=0;i<3;i++) g.px(cx-6+i*6, cy-15, B(7));
+      g.rp(cx-8,cy+8,16,2,B(0)); g.px(cx+6,cy-4,B(6)); g.px(cx-7,cy+2,B(4));
+      for(i=0;i<2;i++) g.px(cx-3+i*7, cy+11, G(4));
+      g.px(cx-5,cy+6,R2(3));
+      g.dith(cx-11,cy-18,22,38, B(2), rnd, 0.25);
+    }
+    if(t===4){                                          // наруч
+      g.poly([[cx-11,cy-14],[cx+11,cy-14],[cx+8,cy+15],[cx-8,cy+15]], B(3));
+      g.poly([[cx-9,cy-12],[cx-2,cy-12],[cx-4,cy+13]], B(5));
+      for(i=0;i<4;i++){ g.rp(cx-11+Math.round(i*0.6),cy-10+i*7,22-Math.round(i*1.2),3,B(2));
+        g.rp(cx-11+Math.round(i*0.6),cy-10+i*7,22-Math.round(i*1.2),1,B(6)); }
+      for(i=0;i<3;i++) g.circ(cx-6+i*6,cy-12,2,B(1));
+      g.rp(cx-6,cy+15,12,4,D(3)); g.rp(cx-6,cy+15,12,1,D(6));
+      g.px(cx-9,cy-11,B(7)); g.px(cx+9,cy+12,B(0));
+      for(i=0;i<2;i++) g.px(cx-4+i*8, cy+3, G(4));
+      g.px(cx+4,cy-6,R2(3)); g.px(cx-7,cy+8,T(4));
+      g.dith(cx-11,cy-14,22,34, B(2), rnd, 0.25);
+    }
+    if(t===5){ helm(cx,cy-2,1.0);                      // шлем
+      g.rp(cx-13,cy+16,26,5,D(3)); g.rp(cx-13,cy+16,26,2,D(6));
+      g.dith(cx-14,cy-20,28,42, B(2), rnd, 0.22); }
+    if(t===6){                                          // умбон щита
+      g.circ(cx,cy,19,D(2)); g.circ(cx,cy,17,D(3)); g.circ(cx-2,cy-2,13,D(4));
+      g.circ(cx,cy,9,B(3)); g.circ(cx-1,cy-1,6,B(5)); g.px(cx-3,cy-3,B(7));
+      for(i=0;i<10;i++){ var e=i/10*Math.PI*2;
+        g.rp(cx+Math.round(Math.cos(e)*15)-2, cy+Math.round(Math.sin(e)*15)-2, 4,4, B(2)); }
+      g.dith(cx-19,cy-19,38,38, D(2), rnd, 0.3);
+    }
+    if(t===7){ shield(cx,cy,1.35);                     // боевой щит
+      g.rp(cx-4,cy+22,9,10,D(3)); g.rp(cx-4,cy+22,9,3,D(6));
+      g.dith(cx-23,cy-23,46,46, D(2), rnd, 0.22); }
+    if(t===8){ blade(cx,cy+6,1.25);                    // клинок
+      for(i=0;i<5;i++) g.px(cx-8+i*4, cy-30, L(6));
+      g.dith(cx-14,cy-34,28,54, T(2), rnd, 0.2); }
+    if(t===9){ cuirass(cx,cy,1.15);                    // кираса
+      g.rp(cx-19,cy-19,38,4,B(2)); g.rp(cx-19,cy-19,38,1,B(6));
+      for(i=0;i<4;i++) g.rp(cx-16+i*10,cy+20,7,6,B(3));
+      g.dith(cx-19,cy-20,38,48, B(2), rnd, 0.2); }
+    if(t===10){                                         // ПОЛНЫЙ ДОСПЕХ
+      S.rays(cx,cy-2,26,40,G,12);
+      shield(cx-24,cy+6,0.90);                          // щит слева
+      blade(cx+25,cy+16,0.95);                          // меч справа
+      cuirass(cx,cy+6,0.92);                            // кираса по центру
+      helm(cx,cy-24,0.80);                              // шлем сверху
+      for(i=0;i<14;i++){ var f=i/14*Math.PI*2;          // сияние вокруг
+        g.rp(cx+Math.round(Math.cos(f)*36)-1, cy+Math.round(Math.sin(f)*36)-1, 3,3, G(6)); }
+      g.rp(cx-26,cy+34,52,5,D(3)); g.rp(cx-26,cy+34,52,2,D(6));
+      for(i=0;i<5;i++) g.px(cx-18+i*9, cy-40, G(7));
+    }
+    g.dith(0,0,IS,IS, B(2), rnd, 0.10);
+    g.dith(0,0,IS,IS, B(6), rnd, 0.05);
+  });
+}
+
+function prizeSprite(k){
+  if(k===0) return seasonalSprite();
+  if(k===1) return sprite('prize1', IS, IS, function(c,g){   // траншейный фонарь
+    var S2=shp(g), rnd=mulberry32(9922), cx=43, cy=44, i;
+    var M=RA.brass, L=RA.glass, T=RA.steel, O=RA.coral;
+    g.rp(cx-3,cy-40,7,10,M(3)); g.circ(cx,cy-42,5,M(4)); g.circ(cx,cy-42,2,M(0));
+    g.poly([[cx-20,cy-30],[cx+20,cy-30],[cx+13,cy-38],[cx-13,cy-38]], M(4));
+    g.poly([[cx-15,cy-31],[cx+9,cy-31],[cx-2,cy-36]], M(6));
+    g.rp(cx-19,cy-30,38,7,M(3)); g.rp(cx-19,cy-30,38,2,M(7));
+    g.rp(cx-17,cy-23,6,44,M(3)); g.rp(cx+11,cy-23,6,44,M(3));
+    g.rp(cx-17,cy-23,2,44,M(6)); g.rp(cx+11,cy-23,2,44,M(1));
+    S2.glass(cx-12,cy-22,24,42,L);
+    S2.orb(cx,cy-2,10,L); S2.rays(cx,cy-2,12,24,L,10);
+    for(i=0;i<5;i++) g.rp(cx-12,cy-16+i*8,24,1,L(6));
+    g.rp(cx-21,cy+21,42,8,M(3)); g.rp(cx-21,cy+21,42,2,M(6));
+    g.rp(cx-14,cy+29,28,5,M(1));
+    for(i=0;i<4;i++) g.rp(cx-16+i*10,cy+34,6,4,T(3));
+    for(i=0;i<8;i++){ var b=i/8*Math.PI*2;
+      g.px(cx+Math.round(Math.cos(b)*24), cy-2+Math.round(Math.sin(b)*24), L(6)); }
+    g.dith(cx-21,cy-42,42,76, M(2), rnd, 0.18);
+    g.px(cx-7,cy-8,L(7));
+  });
+  if(k===2) return armourSprite(10);                        // награда: полный доспех
+  return sprite('prize3', IS, IS, function(c,g){              // заготовка четвёртой награды
+    var S2=shp(g), rnd=mulberry32(9944), cx=43, cy=44, i;
+    var G=RA.gold, K=RA.stone, L=RA.glass;
+    g.poly([[cx-20,cy+18],[cx+20,cy+18],[cx+12,cy-20],[cx-12,cy-20]], G(3));
+    g.poly([[cx-16,cy+16],[cx-4,cy+16],[cx-8,cy-18]], G(5));
+    g.rp(cx-24,cy+18,48,7,G(2)); g.rp(cx-24,cy+18,48,2,G(6));
+    for(i=0;i<4;i++) g.rp(cx-14,cy-10+i*8,28,2,G(1));
+    g.circ(cx,cy-26,7,L(3)); g.circ(cx-1,cy-27,5,L(6)); g.px(cx-3,cy-29,L(7));
+    S2.ring(cx,cy-2,26,G,12);
+    g.dith(cx-24,cy-32,48,58, G(2), rnd, 0.18);
+  });
+}
 function seasonalSprite(){                       // сезонная реликвия: конвойный колокол
   return sprite('seasonal', IS, IS, function(c,g){
     var S2=shp(g), rnd=mulberry32(9911), cx=43, cy=44, i;
@@ -2500,7 +2678,7 @@ function bakeBG(){
 /* ================= ГЕОМЕТРИЯ ЭКРАНА ================= */
 var HUD_H=126, COLS=6, ROWS=8, CELL=80, BX=30, BY=188;
 var BOARD_W=COLS*CELL, BOARD_H=ROWS*CELL, BOARD_B=BY+BOARD_H;   // 828
-var VERSION='v5.4';
+var VERSION='v5.8';
 
 var BTN={
   nav_game :{x:10, y:898, w:124, h:52, label:'DIVE'},
@@ -2524,7 +2702,7 @@ var BTN={
   top      :{x:361,y:226, w:165, h:42, label:'TOP 10'},
   closewld :{x:180,y:846, w:180, h:44, label:'CLOSE'},
   relicok  :{x:150,y:676, w:240, h:56, label:'CONTINUE'},
-  curiook  :{x:150,y:566, w:240, h:52, label:'CONTINUE'},
+  curiook  :{x:150,y:600, w:240, h:50, label:'CONTINUE'},
   closetop :{x:180,y:820, w:180, h:52, label:'CLOSE'},
   closedet :{x:180,y:812, w:180, h:52, label:'CLOSE'},
   storyok  :{x:150,y:630, w:240, h:56, label:'CONTINUE'},
@@ -2632,7 +2810,8 @@ function baseState(){
     relics:newFlags(regLen('relics',12)),   // 0 не найдена, 1 в руках
     curios:newFlags(regLen('curios',18)), curioOpen:-1,
     expPts:0, expStep:0, fundLevel:0,
-    evCycle:-1, evPts:0, evStep:0, seasonal:0,
+    evCycle:-1, evPts:0, evStep:0, seasonal:0, prizes:[0,0,0,0], armourDone:0,
+    tideAt:0, tideDir:1,
     owned:newFlags(regLen('decor',13)),
     plots:[[],[],[],[],[],[]],
     storyOpen:-1, relicOpen:-1, detail:-1, diagOpen:false, shopPage:0, curioPage:0, giftDone:0, giftOpen:0, helpPage:0,
@@ -2786,20 +2965,41 @@ function deliverToChapter(slot, cellIdx){
    Идёт по реальному календарю, но НЕ наказывает за отсутствие:
    прогресс не сгорает, пропущенное событие вернётся следующим циклом.
    Никаких «зайди сегодня» — только полоса, которая копится игрой. */
-var EVENT_DAYS=14, DAY_MS=86400000;
+var EVENT_DAYS=7, DAY_MS=86400000;   // неделя на событие, четыре события = месяц
 var EV_NOW=null;                              // подменяемое время для проверок
 function evNow(){ return (EV_NOW!==null)?EV_NOW:Date.now(); }
+/* Четыре события по неделе каждое. Полный оборот — месяц.
+   У каждого СВОЯ награда-предмет на последней вехе. */
 var EVENTS=[
-  {id:'saltrun', name:'The Salt Run',
+  {id:'saltrun', name:'The Salt Run', prize:0,
    line:'A convoy is being assembled for the flooded coast. Fill the manifest.',
    steps:[60,150,280,460,700,1000],
-   rewards:['+400 coins','Tool','+30 charges','+900 coins','Curiosity','SEASONAL RELIC']},
-  {id:'lantern', name:'The Lantern Watch',
+   rewards:['+400 coins','Tool','+30 charges','+900 coins','Curiosity','CONVOY BELL']},
+  {id:'lantern', name:'The Lantern Watch', prize:1,
    line:'Light the markers along the trench before the current turns.',
    steps:[60,150,280,460,700,1000],
-   rewards:['+400 coins','Tool','+30 charges','+900 coins','Curiosity','SEASONAL RELIC']}
+   rewards:['+400 coins','Tool','+30 charges','+900 coins','Curiosity','TRENCH LANTERN']},
+  {id:'ancients', name:'The Ancient Wardens', prize:2, armour:true,
+   line:'Bronze washes up from a wreck older than the city. Merge the pieces and the warden takes shape.',
+   steps:[60,150,280,460,700,1000],
+   rewards:['+400 coins','Tool','+30 charges','+900 coins','Curiosity','WARDEN\u2019S PANOPLY']},
+  {id:'tide', name:'The Turning Tide', prize:3, tide:true,
+   line:'The current shifts every few minutes. Ride it: the water clears one edge of the board and leaves something behind.',
+   steps:[60,150,280,460,700,1000],
+   rewards:['+400 coins','Tool','+30 charges','+900 coins','Curiosity','TIDE STONE']}
 ];
-var SEASONAL={name:'Convoy Bell', note:'Rung to call the salt convoys home. It was recovered from a season when no convoy came, and it still answers when struck.'};
+/* Награды событий: у каждого своя, собираются в отдельную витрину. */
+var PRIZES=[
+  {name:'Convoy Bell',
+   note:'Rung to call the salt convoys home. It was recovered from a season when no convoy came, and it still answers when struck.'},
+  {name:'Trench Lantern',
+   note:'Burned at the lip of the deep trench to mark the safe line. The oil in it has not been touched, and the wick is still black.'},
+  {name:'Warden\u2019s Panoply',
+   note:'Helm, shield, blade and cuirass of a warden who stood at the old harbour gate. The bronze was cast before the city had a name, and every piece was found separately, scattered along the floor as if set down rather than lost.'},
+  {name:'Tide Stone',
+   note:'A weight the harbour crews hung in the channel to read the current. It swings on its own even in still water, and it has never once been wrong about what the tide will do next.'}
+];
+var SEASONAL=PRIZES[0];                          // совместимость со старым кодом
 function eventCycle(now){ return Math.floor(now/(EVENT_DAYS*DAY_MS)); }
 function eventIdx(now){ return eventCycle(now)%EVENTS.length; }
 function eventNow(now){ return EVENTS[eventIdx(now)]; }
@@ -2811,7 +3011,7 @@ function eventSync(now){
   if(!S) return;
   var cyc=eventCycle((now===undefined||now===null)?evNow():now);
   if(S.evCycle!==cyc){                        // новый цикл: полоса начинается заново
-    S.evCycle=cyc; S.evPts=0; S.evStep=0;
+    S.evCycle=cyc; S.evPts=0; S.evStep=0; S.armourDone=0;
   }
 }
 function eventAdd(v, now){
@@ -2840,11 +3040,17 @@ function grantEvent(step, ev){
   else if(step===3){ S.coins+=900; S.stats.coinsIn+=900; toast('Event: +900 coins'); }
   else if(step===4){ findCurio('event'); }
   else if(step===5){
-    if(!S.seasonal){ S.seasonal=1; S.stats.seasonal=1; S.curioOpen=-2;
-      toast('SEASONAL RELIC: '+SEASONAL.name); }
-    else { S.coins+=2000; S.stats.coinsIn+=2000; toast('Event complete: +2000 coins'); }
+    var pi=(ev&&ev.prize!==undefined)?ev.prize:0;
+    if(!S.prizes) S.prizes=[0,0,0,0];
+    if(!S.prizes[pi]){
+      S.prizes[pi]=1; if(pi===0) S.seasonal=1;
+      S.stats.prizes=(S.stats.prizes||0)+1;
+      S.curioOpen=-2-pi;                          // -2 первая награда, -3 вторая и т.д.
+      toast('EVENT PRIZE: '+PRIZES[pi].name);
+    } else { S.coins+=2000; S.stats.coinsIn+=2000; toast('Event complete: +2000 coins'); }
   }
 }
+function prizesFound(){ var n=0,i; if(S.prizes) for(i=0;i<PRIZES.length;i++) if(S.prizes[i]) n++; return n; }
 function eventProgress(){
   var ev=eventNow(evNow());
   var step=Math.min(S.evStep||0, ev.steps.length-1);
@@ -2852,6 +3058,92 @@ function eventProgress(){
   var prev=(S.evStep>0)?ev.steps[S.evStep-1]:0;
   var done=(S.evStep>=ev.steps.length);
   return {ev:ev, step:S.evStep||0, need:need, prev:prev, pts:S.evPts||0, done:done};
+}
+
+/* --- Осколки доспеха: падают только во время события «Древние воители».
+   Своя цепочка вне обычных: 10 ступеней, слияние ведёт к полному доспеху.
+   Когда доспех собран, осколки перестают падать до конца события. --- */
+var ARMOUR_CHANCE=0.05, ARMOUR_MAX=10;
+function armourEventOn(){
+  var ev=eventNow(evNow());
+  return !!(ev && ev.armour);
+}
+function armourDone(){ return !!(S && S.armourDone); }
+function armourDrop(){
+  if(!S || !armourEventOn() || armourDone()) return false;
+  if(rndGame()>=ARMOUR_CHANCE) return false;
+  var f=freeCell();
+  if(f<0) return false;
+  var t=1+Math.floor(rndGame()*4);              // ранг 1..4, иначе цепочку не пройти за неделю
+  S.board[f]={arm:t};
+  S.stats.armourDrops=(S.stats.armourDrops||0)+1;
+  toast('Ancient bronze: '+ARMOUR_NAMES[t-1]);
+  return true;
+}
+function armourComplete(){
+  S.armourDone=1;
+  if(!S.prizes) S.prizes=[0,0,0,0];
+  if(!S.prizes[2]){ S.prizes[2]=1; S.stats.prizes=(S.stats.prizes||0)+1; S.curioOpen=-4;
+    toast('WARDEN\u2019S PANOPLY assembled'); }
+  else { S.coins+=2500; S.stats.coinsIn+=2500; toast('Panoply reforged: +2500 coins'); }
+}
+
+/* --- ПРИЛИВ: раз в несколько минут волна проходит по доске.
+   Она НИЧЕГО НЕ ОТНИМАЕТ: только сдвигает фишки к одному краю,
+   освобождая противоположный, и оставляет там одну находку.
+   Направление меняется каждый раз — прилив и отлив. --- */
+var TIDE_MS=210000;                              // волна раз в 3.5 минуты
+function tideEventOn(){
+  var ev=eventNow(evNow());
+  return !!(ev && ev.tide);
+}
+function tideLeft(now){
+  if(!S||!S.tideAt) return TIDE_MS;
+  var left=TIDE_MS-(now-S.tideAt);
+  if(left<0) left=0;
+  if(left>TIDE_MS) left=TIDE_MS;
+  return left;
+}
+function tideShift(dir){                         // dir: 1 вниз (прилив), -1 вверх (отлив)
+  var moved=0, col, r, k;
+  for(col=0;col<COLS;col++){
+    var stack=[];
+    for(r=0;r<ROWS;r++){
+      var idx=r*COLS+col, cell=S.board[idx];
+      if(cell) stack.push(cell);
+      S.board[idx]=null;
+    }
+    for(k=0;k<stack.length;k++){
+      var to=(dir>0) ? (ROWS-stack.length+k)*COLS+col : k*COLS+col;
+      S.board[to]=stack[k];
+      moved++;
+    }
+  }
+  return moved;
+}
+function tideFreeRow(dir){                       // какой край освободила волна
+  return (dir>0)?0:(ROWS-1);
+}
+function tideRun(now){
+  if(!S||!tideEventOn()) return false;
+  if(!S.tideAt){ S.tideAt=now; return false; }
+  if(now-S.tideAt<TIDE_MS) return false;
+  S.tideAt=now;
+  S.tideDir=(S.tideDir>0)?-1:1;                   // прилив и отлив по очереди
+  tideShift(S.tideDir);
+  var row=tideFreeRow(S.tideDir), f=-1, q;
+  for(q=0;q<COLS;q++){ var ci=row*COLS+q; if(!S.board[ci]){ f=ci; break; } }
+  if(f<0) f=freeCell();
+  if(f>=0){                                       // волна оставляет находку у освободившегося края
+    var maxC=unlockedGens(S.lvl);
+    var c=Math.floor(rndGame()*maxC);
+    var t=2+Math.floor(rndGame()*3);
+    S.board[f]={c:c, t:Math.min(t, A_CHAINS[c].max)};
+  }
+  S.stats.tides=(S.stats.tides||0)+1;
+  expAdd(6);
+  toast((S.tideDir>0)?'The tide comes in':'The tide goes out');
+  return true;
 }
 
 /* ================= ЭКСПЕДИЦИОННЫЙ ФОНД =================
@@ -3105,9 +3397,24 @@ function tapGenerator(i){
   if(S.tip===0){ S.tip=1; }
   return true;
 }
+function tryMergeArmour(from,to){
+  var a=S.board[from], b=S.board[to];
+  if(!a||!b||a.arm===undefined||b.arm===undefined) return false;
+  if(a.arm!==b.arm) return false;
+  if(a.arm>=ARMOUR_MAX){ toast('The panoply is complete'); return false; }
+  S.board[to]={arm:a.arm+1};
+  S.board[from]=null;
+  S.stats.merges++;
+  addXP(Math.ceil(a.arm/2));
+  expAdd(2+a.arm);
+  toast(ARMOUR_NAMES[a.arm]);
+  if(a.arm+1>=ARMOUR_MAX) armourComplete();
+  return true;
+}
 function tryMerge(from, to){
   var a=S.board[from], b=S.board[to];
   if(!a||!b||from===to) return false;
+  if(a.arm!==undefined||b.arm!==undefined) return tryMergeArmour(from,to);
   if(a.gen!==undefined) return false;
   if(b.gen!==undefined){
     if(a.c===4){                                  // инструмент — доливка, а не полный бак
@@ -3140,6 +3447,7 @@ function tryMerge(from, to){
     }
   }
   if(a.t>=4) S.coins+=a.t*2;
+  armourDrop();                                  // осколок доспеха во время события
   if(rndGame()<TOOL_DROP){                       // редкая находка снасти при слиянии
     var ft=freeCell();
     if(ft>=0){
@@ -3436,7 +3744,7 @@ function cityScore(){
   for(i=0;i<S.relics.length;i++) if(S.relics[i]>0) s+=120;
   for(i=0;i<S.curios.length;i++) if(S.curios[i]) s+=25;
   for(i=0;i<(S.fundLevel||0);i++) s+=30+i*5;
-  if(S.seasonal) s+=200;
+  for(i=0;i<PRIZES.length;i++) if(S.prizes&&S.prizes[i]) s+=200;
   return s;
 }
 function relicsFound(){ var n=0; for(var i=0;i<S.relics.length;i++) if(S.relics[i]>0) n++; return n; }
@@ -3573,6 +3881,7 @@ function sanitize(o){
     for(i=0;i<o.board.length;i++){
       var c=o.board[i];
       if(!c||typeof c!=='object'){ b.board[i]=null; continue; }
+      if(c.arm!==undefined){ b.board[i]={arm:Math.max(1,Math.min(ARMOUR_MAX,(+c.arm)||1))}; continue; }
       if(c.gen!==undefined){
         var gi=Math.max(0,Math.min(Math.max(0,SCH.length-1),(+c.gen)||0));
         b.board[i]={gen:gi, ch:Math.max(0,Math.min(genCap(b.lvl),(+c.ch)||0))};
@@ -3613,6 +3922,12 @@ function sanitize(o){
   b.evPts=Math.max(0,Math.min(1e7,(+o.evPts)||0));
   b.evStep=Math.max(0,Math.min(20,(+o.evStep)||0));
   b.seasonal=o.seasonal?1:0;
+  if(!b.prizes) b.prizes=[0,0,0,0];
+  if(Array.isArray(o.prizes)) for(i=0;i<PRIZES.length;i++) b.prizes[i]=o.prizes[i]?1:0;
+  b.armourDone=o.armourDone?1:0;
+  b.tideAt=Math.max(0,Math.min(4e15,(+o.tideAt)||0));
+  b.tideDir=((+o.tideDir)<0)?-1:1;
+  if(b.seasonal) b.prizes[0]=1;                  // старый флаг = первая награда
   b.giftDone=o.giftDone?1:0;
   b.helpPage=Math.max(0,Math.min(9,(+o.helpPage)||0));
   /* Архив прогресса по городам. Раньше он терялся при загрузке, из-за чего
@@ -3657,7 +3972,9 @@ function sanitize(o){
         for(q5=0;q5<src2.board.length;q5++){
           var cc2=src2.board[q5];
           if(!cc2||typeof cc2!=='object'){ slot.board[q5]=null; continue; }
-          if(cc2.gen!==undefined)
+          if(cc2.arm!==undefined)
+            slot.board[q5]={arm:Math.max(1,Math.min(ARMOUR_MAX,(+cc2.arm)||1))};
+          else if(cc2.gen!==undefined)
             slot.board[q5]={gen:Math.max(0,Math.min(Math.max(0,chn2.length-1),(+cc2.gen)||0)),
                             ch:Math.max(0,Math.min(150,(+cc2.ch)||0))};
           else {
@@ -4229,6 +4546,7 @@ function cellSprite(){
 var TIME=0, drag=null, DETAIL_SLOTS=[], worldsOpen=false, eventOpen=false, achOpen=false, helpOpen=false;
 function cellXY(i){ return {x:BX+(i%COLS)*CELL, y:BY+((i/COLS)|0)*CELL}; }
 function itemSpriteFor(it){
+  if(it && it.arm!==undefined) return armourSprite(it.arm);
   if(it.gen!==undefined) return genSprite(it.gen);
   return itemSprite(it.c,it.t);
 }
@@ -4298,7 +4616,22 @@ function genCount(){ var n=0; for(var i=0;i<S.board.length;i++){ var b=S.board[i
   if(b&&b.gen!==undefined) n++; } return n; }
 function totalCharges(){ var n=0; for(var i=0;i<S.board.length;i++){ var b=S.board[i];
   if(b&&b.gen!==undefined) n+=b.ch; } return n; }
+function drawTideBar(g,x,y,w){
+  var left=tideLeft(NOW||Date.now()), p=1-Math.max(0,Math.min(1,left/TIDE_MS));
+  var sec=Math.ceil(left/1000);
+  g.fillStyle='rgba(3,24,38,0.9)'; g.fillRect(x,y,w,10);
+  g.fillStyle='#5fb8e8'; g.fillRect(x+1,y+1,Math.round((w-2)*p),8);
+  for(var i=0;i<w;i+=8){                          // рябь по полосе
+    var h=1+Math.round(Math.sin(TIME*3+i*0.2)*1.4);
+    g.fillStyle='rgba(190,238,255,0.35)'; g.fillRect(x+i,y+4-h,4,2);
+  }
+  text(g,(S.tideDir>0?'TIDE OUT':'TIDE IN')+' \u2192 '+(sec>=60?(Math.floor(sec/60)+'m'):(sec+'s')),
+       x+4, y+4, 10, '#0b1b2a');
+  text(g,(S.tideDir>0?'TIDE OUT':'TIDE IN')+' \u2192 '+(sec>=60?(Math.floor(sec/60)+'m'):(sec+'s')),
+       x+4, y+3, 10, '#eafcff');
+}
 function drawExpBar(g,x,y,w){
+  if(tideEventOn()) return drawTideBar(g,x,y,w);
   var need=expNeed(S.expStep||0), p=Math.max(0,Math.min(1,(S.expPts||0)/need));
   g.fillStyle='rgba(3,24,38,0.9)'; g.fillRect(x,y,w,10);
   g.fillStyle='#ffd487'; g.fillRect(x+1,y+1,Math.round((w-2)*p),8);
@@ -4411,12 +4744,12 @@ function drawBoard(g){
       }
     }
     if(it.gen===undefined){
-      var lbl=String(it.t)+'/'+A_CHAINS[it.c].max;
+      var lbl=(it.arm!==undefined)? (String(it.arm)+'/'+ARMOUR_MAX) : (String(it.t)+'/'+A_CHAINS[it.c].max);
       g.fillStyle='rgba(24,96,128,0.88)'; g.fillRect(pos.x+CELL-30,pos.y+CELL-19,26,15);
       g.fillStyle='rgba(190,238,255,0.55)'; g.fillRect(pos.x+CELL-30,pos.y+CELL-19,26,1);
       text(g, lbl, pos.x+CELL-17, pos.y+CELL-12, 12, '#f2fbff','center');
     }
-    if(it.gen===undefined&&it.t>=DIVE_MIN){
+    if(it.gen===undefined&&it.arm===undefined&&it.t>=DIVE_MIN){
       var top=(it.t>=A_CHAINS[it.c].max);
       g.fillStyle=top?'#ffe27a':'#7ff0d8';
       g.fillRect(pos.x+6,pos.y+6,CELL-12,3);
@@ -4617,7 +4950,7 @@ function drawDetail(g){
   }
   button(g,BTN.closedet,false);
 }
-function plaque(i){ return {x:20+(i%3)*167, y:210+((i/3)|0)*140, w:160, h:132}; }
+function plaque(i){ return {x:20+(i%3)*167, y:206+((i/3)|0)*124, w:160, h:116}; }
 var CUR_PER=7;
 function curioPages(){ return Math.max(1, Math.ceil(A_CURIOS.length/CUR_PER)); }
 function curioPage(){ return Math.max(0, Math.min(curioPages()-1, S.curioPage||0)); }
@@ -4632,19 +4965,29 @@ function drawMuseum(g){
     var q=plaque(i), found=(S.relics[i]>0);
     panel(g,q.x,q.y,q.w,q.h, found?'rgba(12,72,96,0.94)':'rgba(24,32,42,0.9)');
     if(found){
-      g.drawImage(relicSprite(i),0,0,IS,IS, q.x+q.w/2-32, q.y+4, 64,64);
-      g.fillStyle='rgba(212,240,255,0.18)'; g.fillRect(q.x+12,q.y+70,q.w-24,2);
+      g.drawImage(relicSprite(i),0,0,IS,IS, q.x+q.w/2-29, q.y+2, 58,58);
+      g.fillStyle='rgba(212,240,255,0.18)'; g.fillRect(q.x+12,q.y+62,q.w-24,2);
       var nm=A_RELICS[i].name.split(' ');
-      text(g, nm[0], q.x+q.w/2, q.y+86, 12, '#ffffff','center');
-      text(g, nm.slice(1).join(' '), q.x+q.w/2, q.y+102, 12, '#ffffff','center');
+      text(g, nm[0], q.x+q.w/2, q.y+76, 11, '#ffffff','center');
+      text(g, nm.slice(1).join(' '), q.x+q.w/2, q.y+90, 11, '#ffffff','center');
       text(g, A_CHAPTERS[A_RELICS[i].site].name.replace('The ',''), q.x+q.w/2, q.y+120, 10, '#9df0ff','center');
     } else {
-      text(g,'? ? ?', q.x+q.w/2, q.y+52, 17, '#5f8ba0','center');
+      text(g,'? ? ?', q.x+q.w/2, q.y+48, 16, '#5f8ba0','center');
       text(g, observatoryOn()? A_CHAPTERS[A_RELICS[i].site].name.replace('The ','') : 'unknown site',
-           q.x+q.w/2, q.y+96, 10, '#4f7a90','center');
-      if(!observatoryOn()) text(g,'Observatory reveals', q.x+q.w/2, q.y+114, 9, '#3f6478','center');
+           q.x+q.w/2, q.y+84, 10, '#4f7a90','center');
+      if(!observatoryOn()) text(g,'Observatory reveals', q.x+q.w/2, q.y+100, 9, '#3f6478','center');
     }
   }
+  for(var pk=0;pk<PRIZES.length;pk++){
+    var pb={x:20+pk*126, y:702, w:118, h:58}, got3=!!(S.prizes&&S.prizes[pk]);
+    g.fillStyle=got3?'rgba(46,32,64,0.94)':'rgba(24,26,38,0.85)';
+    g.fillRect(pb.x,pb.y,pb.w,pb.h);
+    if(got3){
+      g.drawImage(prizeSprite(pk),0,0,IS,IS, pb.x+2, pb.y-6, 62,62);
+      text(g, PRIZES[pk].name.split(' ')[0], pb.x+pb.w-6, pb.y+34, 10, '#e0c8ff','right');
+    } else text(g,'?', pb.x+pb.w/2, pb.y+30, 16, '#5f5a78','center');
+  }
+  text(g,'EVENT PRIZES  '+prizesFound()+'/'+PRIZES.length, 270, 692, 11, '#c8a8ff','center');
   panel(g,14,768,512,116,'rgba(6,34,54,0.92)');
   text(g,'SMALL FINDS  '+curiosFound()+'/'+A_CURIOS.length, 270, 777, 12, '#ffd487','center');
   text(g,(curioPage()+1)+' / '+curioPages(), 270, 862, 11, '#9fd8ec','center');
@@ -4904,13 +5247,15 @@ function drawGift(g){
   text(g,'You will only see this once.', 270, 636, 12, '#7fa8bc','center');
   button(g,BTN.giftok,false,'rgba(30,120,90,0.95)');
 }
-function drawSeasonalStory(g){
+function drawPrizeStory(g){
   scrim(g);
-  panel(g,26,240,488,400,'rgba(22,12,44,0.98)');
-  text(g,'SEASONAL RELIC', 270, 282, 17, '#c8a8ff','center');
-  text(g, SEASONAL.name, 270, 318, 24, '#ffe27a','center');
-  g.drawImage(seasonalSprite(),0,0,IS,IS, 264-IS/2+6, 340, IS, IS);
-  wrap(g, SEASONAL.note, 52, 452, 16, '#eafcff', 40, 27);
+  var k=Math.max(0,Math.min(PRIZES.length-1, -(S.curioOpen)-2));
+  var pz=PRIZES[k];
+  panel(g,20,196,500,470,'rgba(22,12,44,0.98)');
+  text(g,'EVENT PRIZE', 270, 232, 16, '#c8a8ff','center');
+  text(g, pz.name, 270, 266, 22, '#ffe27a','center');
+  g.drawImage(prizeSprite(k),0,0,IS,IS, 264-IS/2+6, 286, IS, IS);
+  wrap(g, pz.note, 46, 392, 15, '#eafcff', 42, 24);
   button(g,BTN.curiook,false);
 }
 function achRow(i){ return {x:24, y:194+i*24, w:492, h:22}; }
@@ -5033,7 +5378,7 @@ function render(){
   if(S.storyOpen>=0) drawStory(g);
   if(S.relicOpen>=0) drawRelicStory(g);
   if(S.curioOpen>=0) drawCurioStory(g);
-  if(S.curioOpen===-2) drawSeasonalStory(g);
+  if(S.curioOpen<=-2) drawPrizeStory(g);
   if(S.giftOpen) drawGift(g);
   if(helpOpen) drawHelp(g);
   drawAchFX(g);
@@ -5063,7 +5408,7 @@ function onDown(x,y){
     if(inBtn(BTN.giftok,x,y)){ S.giftOpen=0; helpOpen=true; S.helpPage=0; save(); }
     return;
   }
-  if(S.curioOpen===-2){ if(inBtn(BTN.curiook,x,y)){ S.curioOpen=-1; save(); } return; }
+  if(S.curioOpen<=-2){ if(inBtn(BTN.curiook,x,y)){ S.curioOpen=-1; save(); } return; }
   if(eventOpen){ if(inBtn(BTN.closeevt,x,y)){ eventOpen=false; save(); } return; }
   if(S.curioOpen>=0){ if(inBtn(BTN.curiook,x,y)){ S.curioOpen=-1; save(); } return; }
   if(S.relicOpen>=0){ if(inBtn(BTN.relicok,x,y)){ S.relicOpen=-1; save(); } return; }
@@ -5145,6 +5490,10 @@ function onDown(x,y){
       if(x>=q.x&&x<=q.x+q.w&&y>=q.y&&y<=q.y+q.h&&S.relics[mi]>0){ S.relicOpen=mi; return; } }
     if(inBtn(BTN.musPrev,x,y)){ S.curioPage=(curioPage()+curioPages()-1)%curioPages(); save(); return; }
     if(inBtn(BTN.musNext,x,y)){ S.curioPage=(curioPage()+1)%curioPages(); save(); return; }
+    for(var pk2=0;pk2<PRIZES.length;pk2++){
+      var pb2={x:20+pk2*126, y:702, w:118, h:58};
+      if(x>=pb2.x&&x<=pb2.x+pb2.w&&y>=pb2.y&&y<=pb2.y+pb2.h&&S.prizes&&S.prizes[pk2]){
+        S.curioOpen=-2-pk2; return; } }
     for(var ci2=0;ci2<CUR_PER;ci2++){ var k4=curioAt(ci2); if(k4<0) continue;
       var cb2=curioBox(ci2);
       if(x>=cb2.x&&x<=cb2.x+cb2.w&&y>=cb2.y&&y<=cb2.y+cb2.h&&S.curios[k4]){ S.curioOpen=k4; return; } }
@@ -5288,6 +5637,7 @@ function frame(now){
     }
     var got=regen(NOW);
     if(got>0){ save(); }
+    if(tideRun(NOW)){ sfxBuild(); for(var tw=0;tw<6;tw++) burst(60+tw*80, BY+40+tw*90, '#9df0ff', 10); save(); }
     if(collectDive(NOW)){ if(S.relicOpen>=0) sfxRelic(); else sfxBuild();
       burst(DIVER.x+40, DIVER.y+26, '#9df0ff', 22); pushScore(); save(); }
     if(FRAMES_SINCE_GEN++>60){ FRAMES_SINCE_GEN=0; if(missingGens().length) placeGenerators(); }
@@ -5367,7 +5717,12 @@ window.__DG={
   pushScore:pushScore, fetchTop:fetchTop, FB_SET:function(u){ FB_URL=u; },
   syncState:function(){ return SYNC; }, topList:function(){ return TOPLIST; },
   buyFund:buyFund, fundPrice:fundPrice, fundExpPts:fundExpPts, fundScore:fundScore,
-  EVENTS:EVENTS, SEASONAL:SEASONAL, eventNow:eventNow, eventCycle:eventCycle,
+  EVENTS:EVENTS, SEASONAL:SEASONAL, PRIZES:PRIZES, prizeSprite:prizeSprite, prizesFound:prizesFound,
+  ARMOUR_NAMES:ARMOUR_NAMES, ARMOUR_MAX:ARMOUR_MAX, ARMOUR_CHANCE:ARMOUR_CHANCE,
+  TIDE_MS:TIDE_MS, tideEventOn:tideEventOn, tideRun:tideRun, tideShift:tideShift, tideLeft:tideLeft,
+  armourSprite:armourSprite, armourDrop:armourDrop, armourEventOn:armourEventOn,
+  armourDone:armourDone, tryMergeArmour:tryMergeArmour,
+  eventNow:eventNow, eventCycle:eventCycle,
   eventAdd:eventAdd, eventSync:eventSync, eventProgress:eventProgress, eventEndsIn:eventEndsIn,
   evBox:evBox, seasonalSprite:seasonalSprite, EVENT_DAYS:EVENT_DAYS,
   setEventNow:function(t){ EV_NOW=t; },
