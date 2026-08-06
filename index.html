@@ -1334,11 +1334,369 @@ function r3Pipe(c,g,t){
 
 var DRAW3=[r3Glass,r3Ash,r3Kiln,r3Sand,r3Pipe];
 
+/* ================= ГРАФИКА РЕГИОНА 4: THE ICE ROADS ================= */
+var RD={
+  ice   : R(buildRamp(['#0e2a7a','#2a5ae0','#7a9cff','#dce8ff'])),
+  deep  : R(buildRamp(['#0a1a4a','#2440a8','#5a78e0','#b8c8ff'])),
+  rope4 : R(buildRamp(['#5a3a08','#a87418','#e0aa40','#ffe4a0'])),
+  flame : R(buildRamp(['#7a3a00','#e08820','#ffc050','#fff0c0'])),
+  bone4 : R(buildRamp(['#5a5240','#a89a78','#d8ccaa','#fff8e0'])),
+  brass4: R(buildRamp(['#4a3a10','#9a7a24','#d0aa48','#f8e0a0'])),
+  wood4 : R(buildRamp(['#241a3e','#443078','#6a54b0','#a898e0'])),
+  frost : R(buildRamp(['#2a4a5a','#5e8ea0','#9cc4d4','#e8f8ff'])),
+  dark4 : R(buildRamp(['#0e1420','#242e40','#465268','#8894a8']))
+};
+
+/* ---- ЛЁД: от осколка до сердца зимы ---- */
+function r4Ice(c,g,t){
+  var S=shp(g), rnd=mulberry32(4600+t), cx=43, cy=44, i;
+  var I=RD.ice, D=RD.deep, F=RD.frost, L=RD.flame;
+  function block(x,y,w,h){
+    g.rp(x,y,w,h,I(1)); g.rp(x+2,y+2,w-4,h-4,I(3));
+    g.rp(x+2,y+2,Math.max(2,(w-4)>>1),Math.max(2,(h-4)>>1),I(5));
+    g.px(x+3,y+3,I(7));
+    for(var q=0;q<h;q+=9) g.rp(x+3,y+5+q,w-6,1,I(6));
+  }
+  if(t===1){ g.poly([[cx-9,cy+8],[cx-2,cy-11],[cx+9,cy-3],[cx+6,cy+9]], I(2));
+    g.poly([[cx-7,cy+6],[cx-2,cy-8],[cx+6,cy-2]], I(4));
+    g.poly([[cx-4,cy+1],[cx-1,cy-5],[cx+3,cy-1]], I(6));
+    g.px(cx-3,cy-5,I(7)); g.px(cx+7,cy+6,D(3));
+    g.px(cx-8,cy+7,D(1)); g.px(cx+2,cy-9,F(5)); g.px(cx+4,cy+3,F(3));
+    for(i=0;i<3;i++) g.px(cx-5+i*5, cy+6, I(0)); }
+  if(t===2){ g.rp(cx-15,cy-11,30,22,I(1)); g.rp(cx-12,cy-8,24,16,I(3));
+    g.rp(cx-12,cy-8,12,8,I(5));
+    for(i=0;i<4;i++) g.rp(cx-11,cy-4+i*5,22,1,I(6));
+    g.px(cx-10,cy-6,I(7)); g.px(cx+12,cy+9,F(2)); }
+  if(t===3){ block(cx-16,cy-16,32,32);
+    for(i=0;i<3;i++) g.rp(cx-13+i*10,cy-13,2,26,I(1));
+    g.px(cx+13,cy+13,D(3)); g.px(cx-14,cy-14,I(7)); g.px(cx+13,cy-14,D(1));
+    for(i=0;i<4;i++) g.px(cx-10+i*7, cy+11, F(4));
+    g.px(cx-6,cy-8,F(6)); g.px(cx+6,cy+4,D(4)); }
+  if(t===4){ block(cx-11,cy-26,22,52);
+    for(i=0;i<5;i++) g.rp(cx-11,cy-18+i*9,22,2,I(1));
+    g.rp(cx-13,cy-28,26,4,I(2)); g.rp(cx-13,cy+24,26,4,I(0));
+    for(i=0;i<3;i++) g.px(cx-6+i*6, cy-30, F(5)); }
+  if(t===5){ g.circ(cx,cy,20,I(1)); g.circ(cx-1,cy-1,18,I(3));
+    g.circ(cx-4,cy-4,11,I(5)); g.circ(cx-6,cy-6,6,I(7));
+    for(i=0;i<12;i++){ var a=i/12*Math.PI*2;
+      g.px(cx+Math.round(Math.cos(a)*19), cy+Math.round(Math.sin(a)*19), F(4)); }
+    for(i=0;i<4;i++) g.rp(cx-14,cy-8+i*6,28,1,I(6)); }
+  if(t===6){ g.circ(cx,cy,23,D(1)); g.circ(cx-1,cy-1,21,D(2));
+    g.circ(cx-3,cy-3,15,I(3)); g.circ(cx-5,cy-5,8,I(6));
+    for(i=0;i<6;i++){ var b=i/6*Math.PI*2;
+      for(var k=8;k<21;k++) g.px(cx+Math.round(Math.cos(b)*k), cy+Math.round(Math.sin(b)*k), D(4)); }
+    S.ring(cx,cy,24,F,14); g.px(cx-7,cy-7,I(7)); }
+  if(t===7){                                             // синий свод
+    for(i=0;i<11;i++){ var t2=Math.PI+(i+0.5)/11*Math.PI;
+      g.rp(cx+Math.round(Math.cos(t2)*22)-4, cy+8+Math.round(Math.sin(t2)*22)-4, 9,9, D(2)); }
+    g.rp(cx-24,cy+8,48,18,D(1)); g.rp(cx-21,cy+11,42,12,I(3));
+    g.rp(cx-21,cy+11,20,6,I(5));
+    for(i=0;i<5;i++) g.rp(cx-18+i*9,cy+8,2,18,D(3));
+    for(i=0;i<4;i++) g.px(cx-12+i*8, cy-14, F(5)); }
+  if(t===8){                                             // замёрзшая арка
+    g.rp(cx-24,cy-4,11,30,I(1)); g.rp(cx+13,cy-4,11,30,I(1));
+    g.rp(cx-21,cy-1,5,24,I(3)); g.rp(cx+16,cy-1,5,24,I(3));
+    for(i=0;i<11;i++){ var t3=Math.PI+(i+0.5)/11*Math.PI;
+      g.rp(cx+Math.round(Math.cos(t3)*19)-5, cy-4+Math.round(Math.sin(t3)*19)-5, 11,11, I(1));
+      g.rp(cx+Math.round(Math.cos(t3)*19)-3, cy-4+Math.round(Math.sin(t3)*19)-3, 6,6, I(3)); }
+    for(i=0;i<5;i++) g.rp(cx-16+i*8,cy+26,6,6,D(2));
+    for(i=0;i<4;i++) g.px(cx-10+i*7, cy-26, F(6)); }
+  if(t===9){                                             // глубокий лёд
+    block(cx-19,cy-24,38,50);
+    for(i=0;i<6;i++) g.rp(cx-19,cy-16+i*8,38,2,D(2));
+    g.poly([[cx-14,cy+22],[cx-14,cy-8],[cx+2,cy-20],[cx+10,cy-20]], D(3));
+    g.poly([[cx-14,cy+22],[cx-14,cy+6],[cx-4,cy-20],[cx+2,cy-20]], I(5));
+    for(i=0;i<5;i++) g.px(cx-12+i*7, cy-26, F(6));
+    S.ring(cx,cy,27,F,14); }
+  if(t===10){                                            // сердце зимы
+    S.rays(cx,cy,24,38,D,12);
+    g.circ(cx,cy,22,D(1)); g.circ(cx-1,cy-1,20,I(2));
+    g.circ(cx-3,cy-3,14,I(4)); g.circ(cx-5,cy-5,8,I(6)); g.circ(cx-6,cy-6,4,I(7));
+    S.ring(cx,cy,25,I,18,2); S.ring(cx,cy,31,D,12);
+    g.circ(cx+2,cy+3,5,L(3)); g.circ(cx+1,cy+2,3,L(6));  // то, что не холодное
+    for(i=0;i<6;i++) g.px(cx-14+i*6, cy+19, F(6)); }
+  g.dith(0,0,IS,IS, I(2), rnd, 0.14); g.dith(0,0,IS,IS, I(6), rnd, 0.08);
+  g.dith(0,0,IS,IS, D(3), rnd, 0.05);
+}
+
+/* ---- ВЕРЁВКИ: от шнура до длинной линии ---- */
+function r4Rope(c,g,t){
+  var S=shp(g), rnd=mulberry32(4700+t), cx=43, cy=44, i;
+  var R2=RD.rope4, M=RD.brass4, W=RD.wood4, D=RD.dark4;
+  function coil(x,y,r,turns){
+    for(var q=turns;q>=0;q--){
+      var rr=r-q*3;
+      if(rr<3) continue;
+      g.ell(x,y-q*2,rr,Math.round(rr*0.42),R2(2));
+      g.ell(x-1,y-q*2-1,rr-2,Math.round(rr*0.30),R2(4));
+      for(var s=0;s<8;s++){ var a=s/8*Math.PI*2;
+        g.px(x+Math.round(Math.cos(a)*rr), y-q*2+Math.round(Math.sin(a)*rr*0.42), R2(1)); }
+    }
+  }
+  function strand(x0,y0,x1,y1,w){
+    var n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0));
+    for(var q=0;q<=n;q++){
+      var x=x0+Math.round((x1-x0)*q/n), y=y0+Math.round((y1-y0)*q/n);
+      g.rp(x,y,w,w,(q%5<3)?R2(3):R2(5));
+    }
+  }
+  if(t===1){ strand(cx-13,cy+13,cx+13,cy-13,5);
+    strand(cx-11,cy+11,cx+11,cy-11,3);
+    g.px(cx-11,cy+11,R2(7)); g.px(cx+11,cy-11,R2(0));
+    g.px(cx-4,cy+4,R2(6)); g.px(cx+4,cy-4,R2(1));
+    g.px(cx-8,cy+14,M(3)); g.px(cx+10,cy-14,D(4)); g.px(cx,cy,W(4));
+    g.px(cx-6,cy+8,R2(2)); g.px(cx+6,cy-8,R2(5)); g.px(cx+2,cy-2,M(6));
+    g.px(cx-9,cy+6,W(2)); g.px(cx+8,cy-6,M(1)); g.px(cx-2,cy+7,D(2)); }
+  if(t===2){ strand(cx-14,cy+14,cx+14,cy-14,5);
+    strand(cx-14,cy+9,cx+14,cy-19,3);
+    g.rp(cx-16,cy+12,7,6,M(3)); g.px(cx-13,cy+13,M(6)); }
+  if(t===3){ for(i=0;i<3;i++) strand(cx-15,cy+13-i*3,cx+15,cy-13-i*3,4);
+    g.ell(cx-2,cy+2,7,5,R2(1)); g.ell(cx-2,cy+2,5,3,R2(4));  // узел
+    g.px(cx-4,cy,R2(7)); }
+  if(t===4){ coil(cx,cy+6,17,4); g.px(cx-8,cy-4,R2(7));
+    g.rp(cx+13,cy-14,8,7,M(3)); g.rp(cx+13,cy-14,8,2,M(6));
+    g.px(cx+15,cy-12,M(0)); g.px(cx-14,cy+8,D(3));
+    for(i=0;i<3;i++) g.px(cx-8+i*8, cy+14, R2(0));
+    g.px(cx+6,cy-2,W(4)); }
+  if(t===5){ g.rp(cx-19,cy-4,39,17,D(3)); g.rp(cx-19,cy-4,39,4,D(6));
+    g.circ(cx,cy+4,10,M(3)); g.circ(cx-2,cy+2,7,M(5)); g.circ(cx,cy+4,3,M(0));
+    for(i=0;i<8;i++){ var e=i/8*Math.PI*2;
+      g.rp(cx+Math.round(Math.cos(e)*12)-2, cy+4+Math.round(Math.sin(e)*12)-2, 5,5, M(2)); }
+    strand(cx+18,cy+2,cx+26,cy-20,4);
+    g.rp(cx-24,cy+13,49,5,D(2)); }
+  if(t===6){ for(i=0;i<8;i++){                             // якорная цепь
+      var y=cy+22-i*6;
+      g.ell(cx+Math.round(Math.sin(i*0.8)*5), y, 8, 5, M(2));
+      g.ell(cx+Math.round(Math.sin(i*0.8)*5)-1, y-1, 5, 3, M(4)); }
+    g.poly([[cx-14,cy-24],[cx+14,cy-24],[cx,cy-8]], M(3));
+    g.poly([[cx-9,cy-22],[cx+7,cy-22],[cx-2,cy-12]], M(5));
+    g.px(cx-7,cy-21,M(7)); }
+  if(t===7){ g.rp(cx-6,cy-30,13,58,R2(3)); g.rp(cx-6,cy-30,5,58,R2(5));
+    for(i=0;i<9;i++) g.rp(cx-6,cy-26+i*7,13,2,R2(1));
+    g.rp(cx-14,cy-34,29,7,M(3)); g.rp(cx-14,cy-34,29,2,M(6));
+    for(i=0;i<3;i++){ g.rp(cx-12+i*11, cy+26, 8,7, M(2)); }
+    for(i=0;i<4;i++) g.px(cx-9+i*7, cy-38, D(5)); }
+  if(t===8){ coil(cx,cy+10,22,6);
+    g.rp(cx-8,cy-28,17,20,W(3)); g.rp(cx-8,cy-28,17,3,W(6));
+    strand(cx,cy-8,cx,cy-26,5);
+    for(i=0;i<4;i++) g.rp(cx-14+i*10, cy+26, 7,6, M(2)); }
+  if(t===9){ coil(cx,cy+14,25,7);
+    g.rp(cx-24,cy-30,49,10,D(3)); g.rp(cx-24,cy-30,49,3,D(6));
+    for(i=0;i<4;i++) strand(cx-18+i*12, cy-20, cx-18+i*12, cy-4, 4);
+    for(i=0;i<5;i++) g.rp(cx-20+i*10, cy-38, 7,8, M(2));
+    for(i=0;i<4;i++) g.px(cx-12+i*8, cy-42, RD.frost(5)); }
+  if(t===10){ S.rays(cx,cy,18,28,M,10);
+    coil(cx,cy+12,23,6);
+    g.rp(cx-22,cy-26,45,9,D(3)); g.rp(cx-22,cy-26,45,3,D(7));
+    for(i=0;i<5;i++) strand(cx-18+i*10, cy-17, cx-18+i*10, cy-2, 4);
+    S.orb(cx,cy-32,6,M);
+    for(i=0;i<6;i++) g.px(cx-16+i*7, cy-38, RD.frost(6)); }
+  g.dith(0,0,IS,IS, R2(2), rnd, 0.14); g.dith(0,0,IS,IS, R2(6), rnd, 0.07);
+  g.dith(0,0,IS,IS, M(3), rnd, 0.05);
+}
+
+/* ---- ФОНАРИ: от фитиля до вечного света ---- */
+function r4Lamp(c,g,t){
+  var S=shp(g), rnd=mulberry32(4800+t), cx=43, cy=44, i;
+  var M=RD.brass4, L=RD.flame, D=RD.dark4, I=RD.ice, F=RD.frost;
+  function glassBox(x,y,w,h){
+    g.rp(x,y,w,h,D(1)); g.rp(x+2,y+2,w-4,h-4,I(2));
+    g.rp(x+2,y+2,Math.max(2,(w-4)>>1),Math.max(2,(h-4)>>1),I(4));
+  }
+  if(t===1){ g.rp(cx-2,cy-6,5,22,RD.rope4(3));
+    g.ell(cx,cy-9,5,6,L(3)); g.ell(cx-1,cy-10,3,4,L(6)); g.px(cx-1,cy-12,L(7));
+    g.rp(cx-5,cy+16,11,4,M(2)); }
+  if(t===2){ g.ell(cx,cy+10,13,11,M(3)); g.ell(cx-3,cy+8,9,7,M(5));
+    g.rp(cx-4,cy-4,9,10,I(2)); g.rp(cx-3,cy-3,7,8,I(4));
+    g.ell(cx,cy+1,4,5,L(3)); g.px(cx-1,cy-1,L(6));
+    g.rp(cx-6,cy-8,13,4,M(2)); g.rp(cx-2,cy-14,5,6,M(3)); }
+  if(t===3){ glassBox(cx-11,cy-14,23,26);
+    S.orb(cx,cy,6,L); g.px(cx-2,cy-2,L(7));
+    g.rp(cx-13,cy-18,27,5,M(3)); g.rp(cx-13,cy-18,27,2,M(6));
+    g.rp(cx-13,cy+11,27,5,M(2));
+    g.rp(cx-3,cy-24,7,6,M(3)); g.circ(cx,cy-26,4,M(4)); }
+  if(t===4){ glassBox(cx-13,cy-18,27,32);
+    S.orb(cx,cy-2,8,L); S.rays(cx,cy-2,10,18,L,8);
+    g.rp(cx-15,cy-22,31,6,M(3)); g.rp(cx-15,cy-22,31,2,M(7));
+    g.rp(cx-15,cy+13,31,6,M(2));
+    g.poly([[cx-15,cy-22],[cx+15,cy-22],[cx,cy-32]], M(4));
+    for(i=0;i<3;i++) g.rp(cx-9+i*8, cy+19, 6,6, M(1)); }
+  if(t===5){ g.circ(cx,cy-4,17,M(2)); g.circ(cx,cy-4,15,D(1));
+    g.circ(cx-2,cy-6,12,I(3)); S.orb(cx,cy-4,8,L); S.rays(cx,cy-4,10,22,L,10);
+    for(i=0;i<10;i++){ var a=i/10*Math.PI*2;
+      g.rp(cx+Math.round(Math.cos(a)*16)-2, cy-4+Math.round(Math.sin(a)*16)-2, 5,5, M(4)); }
+    g.rp(cx-8,cy+15,17,10,M(3)); g.rp(cx-8,cy+15,17,3,M(6)); }
+  if(t===6){ g.circ(cx,cy-2,19,M(2)); g.circ(cx,cy-2,17,D(1));
+    for(i=0;i<8;i++){ var b=i/8*Math.PI*2;                 // зеркальные лепестки
+      var mx=cx+Math.round(Math.cos(b)*11), my=cy-2+Math.round(Math.sin(b)*11);
+      g.circ(mx,my,5,I(3)); g.circ(mx-1,my-1,3,I(6)); }
+    S.orb(cx,cy-2,7,L); S.rays(cx,cy-2,9,26,L,12);
+    g.rp(cx-9,cy+18,19,10,M(3)); g.rp(cx-9,cy+18,19,3,M(6)); }
+  if(t===7){ g.rp(cx-4,cy-6,9,32,M(3)); g.rp(cx-4,cy-6,3,32,M(5));
+    glassBox(cx-13,cy-30,27,26);
+    S.orb(cx,cy-17,8,L); S.rays(cx,cy-17,10,22,L,10);
+    g.rp(cx-15,cy-34,31,5,M(3)); g.rp(cx-15,cy-34,31,2,M(7));
+    g.poly([[cx-15,cy-34],[cx+15,cy-34],[cx,cy-42]], M(4));
+    g.rp(cx-11,cy+24,23,6,M(2)); for(i=0;i<3;i++) g.rp(cx-8+i*8, cy+30, 6,5, M(1)); }
+  if(t===8){ g.rp(cx-20,cy+6,41,16,RD.wood4(3)); g.rp(cx-20,cy+6,41,4,RD.wood4(6));
+    for(i=0;i<9;i++){ var fx=cx-16+((i*7)%33), fy=cy+2-((i*5)%14);
+      g.rp(fx,fy,4,7,L(3)); g.px(fx+1,fy-1,L(6)); }
+    S.rays(cx,cy+2,14,26,L,12);
+    g.rp(cx-22,cy+22,45,5,RD.wood4(1));
+    for(i=0;i<4;i++) g.rp(cx-16+i*11, cy+27, 7,7, RD.wood4(2)); }
+  if(t===9){ g.rp(cx-6,cy+4,13,26,M(3)); g.rp(cx-6,cy+4,5,26,M(5));
+    g.circ(cx,cy-14,20,M(2)); g.circ(cx,cy-14,18,D(1));
+    g.circ(cx-3,cy-17,13,I(3));
+    S.orb(cx,cy-14,10,L); S.rays(cx,cy-14,12,30,L,14);
+    for(i=0;i<12;i++){ var e2=i/12*Math.PI*2;
+      g.rp(cx+Math.round(Math.cos(e2)*19)-2, cy-14+Math.round(Math.sin(e2)*19)-2, 5,5, M(4)); }
+    g.rp(cx-13,cy+28,27,6,M(2)); }
+  if(t===10){ S.rays(cx,cy-4,23,36,L,14);
+    g.circ(cx,cy-6,23,M(2)); g.circ(cx,cy-6,21,D(1));
+    g.circ(cx-3,cy-9,15,I(3)); g.circ(cx-5,cy-11,8,I(6));
+    S.orb(cx,cy-6,12,L);
+    S.ring(cx,cy-6,25,M,18,2); S.ring(cx,cy-6,31,L,12);
+    g.rp(cx-8,cy+20,17,14,M(3)); g.rp(cx-8,cy+20,17,3,M(6));
+    for(i=0;i<5;i++) g.px(cx-14+i*7, cy-36, F(6)); }
+  g.dith(0,0,IS,IS, M(2), rnd, 0.13); g.dith(0,0,IS,IS, L(4), rnd, 0.06);
+  g.dith(0,0,IS,IS, M(6), rnd, 0.05);
+}
+
+/* ---- КОСТЬ: от щепки до последнего кита ---- */
+function r4Bone(c,g,t){
+  var S=shp(g), rnd=mulberry32(4900+t), cx=43, base=72, i;
+  var B=RD.bone4, D=RD.dark4, I=RD.ice, F=RD.frost;
+  function rib(x,yBase,h,curve,w){
+    for(var k=0;k<h;k++){
+      var dx=Math.round(Math.sin(k/h*1.4)*curve);
+      g.rp(x+dx, yBase-k, w, 2, (k%6<4)?B(3):B(5));
+    }
+    g.ell(x+Math.round(Math.sin(1.4)*curve)+1, yBase-h, 3, 2, B(6));
+  }
+  if(t===1){ g.poly([[cx-5,base-6],[cx-1,base-22],[cx+5,base-19],[cx+2,base-5]], B(2));
+    g.poly([[cx-4,base-7],[cx-1,base-20],[cx+4,base-18],[cx+2,base-6]], B(3));
+    g.poly([[cx-3,base-8],[cx-1,base-17],[cx+2,base-16]], B(5));
+    g.px(cx-1,base-18,B(7)); g.px(cx+3,base-7,B(0)); g.px(cx-3,base-12,B(6));
+    g.px(cx+4,base-15,B(1)); g.px(cx,base-10,D(4)); g.px(cx-2,base-6,F(4)); }
+  if(t===2){ rib(cx-2,base-4,22,4,5); g.ell(cx,base-4,8,5,B(2)); g.ell(cx-1,base-5,5,3,B(4));
+    g.px(cx-3,base-22,B(7)); g.px(cx+4,base-3,B(0));
+    for(i=0;i<3;i++) g.px(cx-1+i*2, base-12-i*4, B(6));
+    g.px(cx+3,base-16,D(4)); g.px(cx-4,base-8,F(4)); }
+  if(t===3){ g.poly([[cx-16,base-6],[cx-10,base-26],[cx+4,base-24],[cx+12,base-6]], B(3));
+    g.poly([[cx-13,base-8],[cx-9,base-23],[cx-2,base-22]], B(5));
+    for(i=0;i<5;i++) g.rp(cx-11+i*5, base-8, 3,5, B(1));   // зубы
+    g.px(cx-8,base-24,B(7)); }
+  if(t===4){ g.poly([[cx-22,base-6],[cx+22,base-6],[cx+18,base-14],[cx-18,base-14]], B(3));
+    g.poly([[cx-19,base-8],[cx+6,base-8],[cx+4,base-12],[cx-17,base-12]], B(5));
+    for(i=0;i<4;i++) g.rp(cx-14+i*10, base-20, 5,7, B(2));
+    g.px(cx-17,base-12,B(7)); }
+  if(t===5){ rib(cx-14,base-4,34,7,6); rib(cx+10,base-4,34,-7,6);
+    g.ell(cx,base-4,20,6,D(2)); g.ell(cx-3,base-5,14,4,D(4));
+    for(i=0;i<3;i++) g.px(cx-8+i*8, base-40, F(5)); }
+  if(t===6){ for(i=0;i<9;i++){ var t2=Math.PI+(i+0.5)/9*Math.PI;
+      g.rp(cx+Math.round(Math.cos(t2)*21)-4, base-14+Math.round(Math.sin(t2)*21)-4, 9,9, B(3));
+      g.rp(cx+Math.round(Math.cos(t2)*21)-2, base-14+Math.round(Math.sin(t2)*21)-2, 5,5, B(5)); }
+    g.rp(cx-25,base-8,12,6,B(2)); g.rp(cx+13,base-8,12,6,B(2));
+    g.ell(cx,base-4,24,6,D(2)); }
+  if(t===7){ for(i=0;i<4;i++){ rib(cx-19+i*13, base-6, 30+((i*5)%10), 6, 5); }
+    for(i=0;i<3;i++){ var t3=Math.PI+(i+0.5)/3*Math.PI;
+      g.rp(cx+Math.round(Math.cos(t3)*20)-4, base-32+Math.round(Math.sin(t3)*10)-4, 9,9, B(2)); }
+    g.rp(cx-24,base-8,49,6,D(2)); g.rp(cx-24,base-8,49,2,D(5));
+    for(i=0;i<5;i++) g.px(cx-16+i*8, base-46, F(5)); }
+  if(t===8){ g.ell(cx,base-8,26,8,D(2));
+    for(i=0;i<6;i++) rib(cx-22+i*9, base-10, 32+((i*7)%14), (i<3?7:-7), 5);
+    g.poly([[cx-26,base-42],[cx-8,base-48],[cx+2,base-42],[cx-14,base-38]], B(3));
+    g.poly([[cx-23,base-42],[cx-10,base-46],[cx-6,base-42]], B(5));
+    for(i=0;i<4;i++) g.rp(cx-20+i*5, base-40, 3,4, B(1));
+    for(i=0;i<6;i++) g.px(cx-20+i*8, base-56, F(6)); }
+  if(t===9){ S.rays(cx,base-34,16,28,I,10);
+    g.ell(cx,base-6,30,9,D(2)); g.ell(cx-4,base-8,22,6,D(4));
+    for(i=0;i<7;i++) rib(cx-25+i*9, base-8, 36+((i*5)%12), (i<4?8:-8), 5);
+    g.poly([[cx-28,base-48],[cx-6,base-56],[cx+6,base-48],[cx-16,base-42]], B(3));
+    g.poly([[cx-25,base-48],[cx-8,base-53],[cx-2,base-48]], B(5));
+    for(i=0;i<5;i++) g.rp(cx-22+i*5, base-45, 3,5, B(1));
+    S.orb(cx+2,base-50,5,I);
+    for(i=0;i<8;i++) g.px(cx-24+i*7, base-62, F(6)); }
+  g.dith(0,0,IS,IS, B(2), rnd, 0.13); g.dith(0,0,IS,IS, B(6), rnd, 0.07);
+  g.dith(0,0,IS,IS, D(3), rnd, 0.05);
+}
+
+/* ---- САНИ: от полоза до вожака обоза ---- */
+function r4Sled(c,g,t){
+  var S=shp(g), rnd=mulberry32(5000+t), cx=43, cy=44, i;
+  var W=RD.wood4, M=RD.brass4, R2=RD.rope4, D=RD.dark4, I=RD.ice;
+  function runner(x,y,len){
+    g.rp(x,y,len,5,W(3)); g.rp(x,y,len,2,W(6));
+    g.poly([[x+len,y],[x+len+8,y-6],[x+len+8,y+2],[x+len,y+5]], W(3));
+    g.poly([[x+len,y+1],[x+len+6,y-4],[x+len+6,y-1]], W(5));
+  }
+  if(t===1){ runner(cx-20,cy+4,32); g.px(cx-18,cy+5,W(7));
+    for(i=0;i<3;i++){ g.rp(cx-14+i*11, cy-4, 4,8, W(2)); g.px(cx-14+i*11, cy-4, W(5)); }
+    g.px(cx+13,cy+8,W(0)); g.px(cx-10,cy-6,M(4));
+    for(i=0;i<3;i++) g.px(cx-12+i*10, cy+2, R2(3));
+    g.px(cx+4,cy+6,D(3)); }
+  if(t===2){ runner(cx-22,cy+12,36); runner(cx-22,cy-2,36);
+    for(i=0;i<4;i++){ g.rp(cx-18+i*10, cy-2, 4,14, W(2)); g.px(cx-18+i*10, cy-2, W(5)); }
+    g.rp(cx-22,cy-6,40,5,W(3)); g.rp(cx-22,cy-6,40,2,W(6));
+    g.rp(cx-22,cy-2,40,1,W(0));
+    for(i=0;i<3;i++) g.px(cx-14+i*12, cy-8, M(4));
+    g.px(cx+16,cy+14,D(3)); g.px(cx-20,cy-5,R2(4)); }
+  if(t===3){ runner(cx-22,cy+16,36);
+    g.rp(cx-20,cy-2,38,18,W(3)); g.rp(cx-20,cy-2,38,4,W(6));
+    for(i=0;i<4;i++) g.rp(cx-16+i*10, cy+2, 3,12, W(1));
+    for(i=0;i<3;i++) g.rp(cx-14+i*11, cy-12, 8,10, R2(3));
+    g.rp(cx-20,cy+16,38,4,W(0)); }
+  if(t===4){ runner(cx-24,cy+18,40);
+    g.rp(cx-22,cy-2,42,20,W(3)); g.rp(cx-22,cy-2,42,4,W(6));
+    for(i=0;i<5;i++){ g.rp(cx-18+i*10, cy-16, 6,14, R2(3)); g.px(cx-18+i*10, cy-16, R2(6)); }
+    for(i=0;i<3;i++){ var hy=cy-22+i*4;
+      for(var k=0;k<28;k++) g.px(cx-24+k, hy+Math.round(Math.sin(k*0.3)*2), R2(4)); }
+    g.rp(cx-6,cy-26,13,6,M(3)); }
+  if(t===5){ runner(cx-26,cy+20,44); runner(cx-26,cy+8,44);
+    g.rp(cx-24,cy-8,46,20,W(3)); g.rp(cx-24,cy-8,46,4,W(6));
+    g.rp(cx-24,cy+10,46,2,W(0));
+    for(i=0;i<4;i++) g.px(cx-18+i*12, cy-4, M(4));
+    g.px(cx+20,cy+18,D(3)); g.px(cx-22,cy-6,I(4));
+    for(i=0;i<5;i++) g.rp(cx-20+i*11, cy-4, 4,14, W(1));
+    for(i=0;i<4;i++) g.rp(cx-18+i*11, cy-22, 8,14, R2(3));
+    g.rp(cx-24,cy-26,46,5,W(2)); }
+  if(t===6){ runner(cx-27,cy+22,46);
+    g.rp(cx-25,cy-4,48,24,W(3)); g.rp(cx-25,cy-4,48,4,W(7));
+    for(i=0;i<6;i++) g.rp(cx-21+i*10, cy, 4,18, W(1));
+    g.rp(cx-8,cy-24,17,20,D(3)); g.rp(cx-8,cy-24,17,4,D(6));
+    S.orb(cx,cy-14,6,RD.flame);
+    for(i=0;i<3;i++){ for(var k2=0;k2<24;k2++)
+      g.px(cx+8+k2, cy-20+i*5+Math.round(Math.sin(k2*0.3)*2), R2(4)); }
+    for(i=0;i<4;i++) g.rp(cx-18+i*11, cy+22, 7,7, W(2)); }
+  if(t===7){ for(i=0;i<2;i++){ var sx=cx-24+i*26;
+      g.rp(sx,cy-2,24,18,W(3)); g.rp(sx,cy-2,24,4,W(6));
+      runner(sx-1,cy+16,24);
+      for(var q=0;q<3;q++) g.rp(sx+4+q*7, cy+2, 3,12, W(1)); }
+    for(i=0;i<30;i++) g.px(cx-26+i, cy-8+Math.round(Math.sin(i*0.3)*2), R2(4));
+    g.rp(cx-10,cy-24,21,16,D(3)); S.orb(cx,cy-16,6,RD.flame);
+    for(i=0;i<4;i++) g.px(cx-12+i*8, cy-30, I(5)); }
+  if(t===8){ S.rays(cx,cy-14,14,26,RD.flame,10);
+    for(i=0;i<3;i++){ var sx2=cx-28+i*20;
+      g.rp(sx2,cy+2,18,16,W(3)); g.rp(sx2,cy+2,18,3,W(6));
+      runner(sx2-1,cy+18,18); }
+    for(i=0;i<44;i++) g.px(cx-30+i, cy-4+Math.round(Math.sin(i*0.28)*2), R2(4));
+    g.rp(cx-11,cy-28,23,20,D(3)); g.rp(cx-11,cy-28,23,4,D(6));
+    S.orb(cx,cy-18,8,RD.flame);
+    g.rp(cx-13,cy-32,27,5,M(3)); g.rp(cx-13,cy-32,27,2,M(6));
+    for(i=0;i<5;i++) g.px(cx-14+i*7, cy-38, I(6)); }
+  g.dith(0,0,IS,IS, W(2), rnd, 0.13); g.dith(0,0,IS,IS, W(6), rnd, 0.06);
+  g.dith(0,0,IS,IS, R2(3), rnd, 0.05);
+}
+
+var DRAW4=[r4Ice,r4Rope,r4Lamp,r4Bone,r4Sled];
+
+
 var DRAW2=[r2Brine,r2Iron,r2Crate,r2Reed,r2Rig];
 var SHADOW_PAL=[
   [RA.shell,RA.brass,RA.gold,RA.weed,RA.steel],
   [RB.salt, RB.iron, RB.wood2, RB.reed, RB.iron],
-  [RC.glass3, RC.ash, RC.brick, RC.sand3, RC.iron3]
+  [RC.glass3, RC.ash, RC.brick, RC.sand3, RC.iron3],
+  [RD.ice, RD.rope4, RD.brass4, RD.bone4, RD.wood4]
 ];
 
 var DRAW=[drawShell,drawGear,drawGold,drawFlora,drawTool];
@@ -1358,7 +1716,7 @@ function itemSprite(chain,tier){
         var gy=py+Math.round(Math.sin(a2)*ph);
         if(gy<IS-3) g.px(43+Math.round(Math.cos(a2)*pw), gy, RA.glass(6)); }
     }
-    (rg===2?DRAW3:(rg===1?DRAW2:DRAW))[chain](c,g,tier);
+    [DRAW,DRAW2,DRAW3,DRAW4][rg][chain](c,g,tier);
   });
 }
 
@@ -2185,6 +2543,7 @@ function decorSpriteR2(k){
 }
 function decorSprite(k){
   var rg=(typeof S!=='undefined'&&S)?(S.region||0):0;
+  if(rg===3) return (k<8)? decorSpriteR1(k) : decorSpriteR2x(k-8);
   if(rg===2) return (k<8)? decorSpriteR2(k) : decorSpriteR1x(k-8);
   if(rg===1) return (k<8)? decorSpriteR2(k) : decorSpriteR2x(k-8);
   return (k<8)? decorSpriteR1(k) : decorSpriteR1x(k-8);
@@ -2917,12 +3276,185 @@ function monumentSpriteR3(k, built){
   });
 }
 
+
+/* ================= МЕСТА THE ICE ROADS ================= */
+function genSpriteR4(chain){
+  return sprite('genr4_'+chain, IS, IS, function(c,g){
+    var S=shp(g), rnd=mulberry32(5300+chain), cx=43, fl=76, i;
+    var I=RD.ice, D=RD.dark4, M=RD.brass4, L=RD.flame, B=RD.bone4, W=RD.wood4, R2=RD.rope4, F=RD.frost;
+    g.rp(cx-30,fl-15,60,15,I(2)); g.rp(cx-30,fl-15,60,3,I(6));
+    g.rp(cx-30,fl-3,60,3,I(0));
+    for(i=0;i<5;i++) g.rp(cx-24+i*12,fl-13,3,11,I(1));
+    g.dith(cx-30,fl-15,60,15,I(3),rnd,0.4);
+    for(i=0;i<5;i++) g.px(cx-24+i*11, fl-16, F(5));
+    if(chain===0){                                   /* ЛЁД: прорубь */
+      g.ell(cx,fl-24,27,14,D(1)); g.ell(cx-3,fl-26,21,10,RD.deep(2));
+      g.ell(cx-5,fl-28,13,6,RD.deep(4));
+      for(i=0;i<12;i++){ var a=i/12*Math.PI*2;
+        g.rp(cx+Math.round(Math.cos(a)*27)-3, fl-24+Math.round(Math.sin(a)*14)-3, 7,7, I(3)); }
+      for(i=0;i<5;i++){ var bx=cx-20+i*10;
+        g.poly([[bx,fl-40],[bx+7,fl-32],[bx-6,fl-32]], I(3));
+        g.poly([[bx,fl-38],[bx+4,fl-33],[bx-3,fl-33]], I(6)); }
+      for(i=0;i<4;i++) g.px(cx-12+i*8, fl-46, F(6));
+    }
+    if(chain===1){                                   /* ВЕРЁВКИ: лебёдка */
+      g.rp(cx-24,fl-30,48,16,D(3)); g.rp(cx-24,fl-30,48,4,D(6));
+      g.circ(cx,fl-22,11,M(3)); g.circ(cx-2,fl-24,8,M(5)); g.circ(cx,fl-22,3,M(0));
+      for(i=0;i<8;i++){ var e=i/8*Math.PI*2;
+        g.rp(cx+Math.round(Math.cos(e)*13)-2, fl-22+Math.round(Math.sin(e)*13)-2, 5,5, M(2)); }
+      for(i=0;i<14;i++) g.rp(cx+14+Math.round(i*0.4), fl-34-i*2, 4,3, (i%4<2)?R2(3):R2(5));
+      g.rp(cx-28,fl-44,10,14,W(3)); g.rp(cx+18,fl-44,10,14,W(3));
+      for(i=0;i<3;i++) g.px(cx-10+i*10, fl-50, F(5));
+    }
+    if(chain===2){                                   /* ФОНАРИ: столб с лампой */
+      g.rp(cx-5,fl-46,11,32,M(3)); g.rp(cx-5,fl-46,4,32,M(5));
+      for(i=0;i<5;i++) g.rp(cx-5,fl-40+i*7,11,2,M(1));
+      g.rp(cx-14,fl-64,29,21,D(1)); g.rp(cx-11,fl-61,23,15,I(2));
+      g.rp(cx-11,fl-61,11,8,I(4));
+      S.orb(cx,fl-53,7,L); S.rays(cx,fl-53,9,18,L,10);
+      g.rp(cx-16,fl-68,33,5,M(3)); g.rp(cx-16,fl-68,33,2,M(7));
+      g.poly([[cx-16,fl-68],[cx+16,fl-68],[cx,fl-75]], M(4));
+      for(i=0;i<3;i++) g.rp(cx-10+i*9, fl-14, 7,6, M(2));
+    }
+    if(chain===3){                                   /* КОСТЬ: рёберная арка */
+      for(i=0;i<9;i++){ var t2=Math.PI+(i+0.5)/9*Math.PI;
+        g.rp(cx+Math.round(Math.cos(t2)*24)-4, fl-18+Math.round(Math.sin(t2)*24)-4, 9,9, B(3));
+        g.rp(cx+Math.round(Math.cos(t2)*24)-2, fl-18+Math.round(Math.sin(t2)*24)-2, 5,5, B(5)); }
+      g.rp(cx-28,fl-20,12,7,B(2)); g.rp(cx+16,fl-20,12,7,B(2));
+      g.ell(cx,fl-16,15,7,D(2)); g.ell(cx-3,fl-17,10,5,D(4));
+      for(i=0;i<4;i++) g.px(cx-12+i*8, fl-46, F(5));
+    }
+    if(chain===4){                                   /* САНИ: стапель */
+      g.rp(cx-28,fl-20,56,7,W(3)); g.rp(cx-28,fl-20,56,3,W(6));
+      for(i=0;i<4;i++) g.rp(cx-22+i*14, fl-13, 7,11, W(2));
+      g.rp(cx-22,fl-38,44,18,W(3)); g.rp(cx-22,fl-38,44,4,W(6));
+      for(i=0;i<5;i++) g.rp(cx-18+i*9, fl-34, 4,14, W(1));
+      g.poly([[cx+22,fl-20],[cx+30,fl-26],[cx+30,fl-18],[cx+22,fl-15]], W(3));
+      for(i=0;i<16;i++) g.px(cx-24+i*3, fl-42+Math.round(Math.sin(i*0.5)*2), R2(4));
+      for(i=0;i<3;i++) g.px(cx-8+i*8, fl-48, F(5));
+    }
+  });
+}
+function monumentSpriteR4(k, built){
+  return sprite('monr4_'+k+(built?'b':'r'), 96, 96, function(c,g){
+    var S=shp(g), rnd=mulberry32(5500+k*7+(built?1:0)), i, cx=48, fl=90;
+    var I=RD.ice, D=RD.dark4, M=RD.brass4, L=RD.flame, B=RD.bone4, W=RD.wood4, F=RD.frost, DP=RD.deep;
+    function base(w,h){
+      g.rp(cx-w,fl-h,w*2,h,I(2)); g.rp(cx-w,fl-h,w*2,3,I(6));
+      g.rp(cx-w,fl-3,w*2,3,I(0));
+      for(i=0;i<5;i++) g.rp(cx-w+4+i*Math.round((w*2-8)/5),fl-h+2,3,h-4,I(1));
+      g.dith(cx-w,fl-h,w*2,h,I(3),rnd,0.35);
+    }
+    function rubble(){
+      for(i=0;i<9;i++){ var rx=cx-30+Math.round(rnd()*60), ry=fl-8-Math.round(rnd()*7);
+        var rr=3+Math.round(rnd()*4);
+        g.poly([[rx,ry-rr],[rx+rr,ry+rr],[rx-rr,ry+rr]], I(2));
+        g.poly([[rx,ry-rr+2],[rx+Math.round(rr*0.5),ry+rr-1],[rx-Math.round(rr*0.5),ry+rr-1]], I(4)); }
+      for(i=0;i<6;i++) g.px(cx-24+i*9, fl-12, F(5));
+      for(i=0;i<5;i++) g.px(cx-20+i*9, fl-15, B(4));
+      g.dith(cx-32,fl-30,64,26, I(1), rnd, 0.16);
+      g.dith(cx-32,fl-30,64,26, D(3), rnd, 0.10);
+    }
+    function wall(x,y,w,h){
+      g.rp(x,y,w,h,I(2)); g.rp(x,y,w,2,I(6)); g.rp(x,y,3,h,I(4));
+      g.rp(x+w-3,y,3,h,I(0));
+      for(var q=0;q<h;q+=8) g.rp(x,y+q,w,1,I(1));
+      g.dith(x,y,w,h,I(3),rnd,0.28);
+    }
+    if(k===0){ base(28,10);                          /* ЛЕДЯНЫЕ ВОРОТА */
+      if(built){ wall(cx-30,fl-56,60,46);
+        for(i=0;i<11;i++){ var t2=Math.PI+(i+0.5)/11*Math.PI;
+          g.rp(cx+Math.round(Math.cos(t2)*17)-4, fl-24+Math.round(Math.sin(t2)*17)-4, 9,9, D(1)); }
+        g.rp(cx-15,fl-24,31,14,D(0)); g.rp(cx-12,fl-21,25,10,DP(2));
+        for(i=0;i<5;i++) g.px(cx-10+i*6, fl-16, DP(5));
+        g.rp(cx-32,fl-60,64,6,I(4)); g.rp(cx-32,fl-60,64,2,I(7));
+        for(i=0;i<6;i++){ var bx=cx-25+i*10;
+          g.poly([[bx,fl-70],[bx+5,fl-61],[bx-5,fl-61]], I(3)); }
+      } else { wall(cx-26,fl-30,52,20);
+        g.poly([[cx-26,fl-30],[cx+26,fl-30],[cx+10,fl-44],[cx-14,fl-40]], I(1));
+        g.rp(cx-12,fl-24,25,14,D(0)); rubble(); } }
+    if(k===1){ base(30,8);                           /* ДОРОГА ФОНАРЕЙ */
+      if(built){
+        for(i=0;i<4;i++){ var lx=cx-27+i*18, ly=fl-14-i*6;
+          g.rp(lx,ly-26,7,26,M(3)); g.rp(lx,ly-26,3,26,M(5));
+          g.rp(lx-5,ly-38,17,13,D(1)); g.rp(lx-3,ly-36,13,9,I(2));
+          S.orb(lx+3,ly-31,4,L);
+          g.rp(lx-6,ly-40,19,3,M(3)); }
+        g.rp(cx-32,fl-10,64,5,I(1));
+        for(i=0;i<8;i++) g.px(cx-28+i*8, fl-16, F(5));
+      } else {
+        for(i=0;i<3;i++){ var lx2=cx-22+i*20;
+          g.rp(lx2,fl-24,6,16,M(1)); g.rp(lx2-4,fl-30,14,7,D(2)); }
+        rubble(); } }
+    if(k===2){ base(30,10);                          /* КОСТЯНОЙ ЗАЛ */
+      if(built){
+        for(i=0;i<11;i++){ var t3=Math.PI+(i+0.5)/11*Math.PI;
+          g.rp(cx+Math.round(Math.cos(t3)*30)-5, fl-16+Math.round(Math.sin(t3)*30)-5, 11,11, B(3));
+          g.rp(cx+Math.round(Math.cos(t3)*30)-3, fl-16+Math.round(Math.sin(t3)*30)-3, 6,6, B(5)); }
+        g.rp(cx-34,fl-20,14,10,B(2)); g.rp(cx+20,fl-20,14,10,B(2));
+        for(i=0;i<3;i++){ var by=fl-18-i*7;
+          g.rp(cx-20,by,40,3,W(3)); g.rp(cx-20,by,40,1,W(6)); }
+        S.orb(cx,fl-26,6,L);
+        for(i=0;i<5;i++) g.px(cx-16+i*8, fl-50, F(6));
+      } else {
+        for(i=0;i<5;i++){ var t4=Math.PI+(i+0.5)/5*Math.PI;
+          g.rp(cx+Math.round(Math.cos(t4)*26)-4, fl-14+Math.round(Math.sin(t4)*18)-4, 8,8, B(1)); }
+        g.rp(cx-18,fl-16,36,4,W(1)); rubble(); } }
+    if(k===3){ base(32,8);                           /* САННЫЙ ДВОР */
+      if(built){
+        for(i=0;i<3;i++){ var sx=cx-28+i*20;
+          g.rp(sx,fl-26,17,14,W(3)); g.rp(sx,fl-26,17,3,W(6));
+          g.rp(sx-1,fl-12,19,4,W(2));
+          g.poly([[sx+18,fl-12],[sx+24,fl-17],[sx+24,fl-10],[sx+18,fl-8]], W(3));
+          for(var q=0;q<3;q++) g.rp(sx+3+q*5, fl-23, 3,11, W(1)); }
+        for(i=0;i<40;i++) g.px(cx-30+i*1.5, fl-32+Math.round(Math.sin(i*0.3)*3), RD.rope4(4));
+        g.rp(cx-34,fl-40,68,5,W(2)); g.rp(cx-34,fl-40,68,2,W(6));
+        for(i=0;i<5;i++) g.px(cx-20+i*10, fl-46, F(5));
+      } else {
+        for(i=0;i<2;i++){ var sx2=cx-18+i*22;
+          g.rp(sx2,fl-20,15,10,W(1)); g.rp(sx2-1,fl-10,17,3,W(0)); }
+        rubble(); } }
+    if(k===4){ base(28,10);                          /* ПРИВАЛ */
+      if(built){ wall(cx-26,fl-42,52,32);
+        g.ell(cx,fl-24,11,7,D(0)); g.ell(cx,fl-25,8,5,L(3)); g.ell(cx-1,fl-25,5,3,L(6));
+        S.rays(cx,fl-25,9,18,L,10);
+        for(i=0;i<2;i++){ var bnx=cx-22+i*30;
+          g.rp(bnx,fl-36,16,7,W(3)); g.rp(bnx,fl-36,16,2,W(6)); }
+        g.poly([[cx-30,fl-42],[cx+30,fl-42],[cx+20,fl-58],[cx-20,fl-58]], W(3));
+        g.poly([[cx-25,fl-44],[cx+25,fl-44],[cx+17,fl-55],[cx-17,fl-55]], W(5));
+        for(i=0;i<9;i++) g.rp(cx-19+i*5,fl-56,3,14,W(1));
+        for(i=0;i<8;i++) g.rp(cx+14, fl-52+i*2, 5,1, B(1));   // зарубки
+      } else { wall(cx-24,fl-26,48,16);
+        g.poly([[cx-26,fl-26],[cx+22,fl-26],[cx+6,fl-40],[cx-16,fl-36]], W(1));
+        g.ell(cx,fl-18,9,5,D(0)); rubble(); } }
+    if(k===5){ base(34,10);                          /* СЕРДЦЕ ЗИМЫ */
+      if(built){
+        for(i=0;i<11;i++){ var t5=Math.PI+(i+0.5)/11*Math.PI;
+          g.rp(cx+Math.round(Math.cos(t5)*30)-5, fl-20+Math.round(Math.sin(t5)*30)-5, 11,11, I(2));
+          g.rp(cx+Math.round(Math.cos(t5)*30)-3, fl-20+Math.round(Math.sin(t5)*30)-3, 6,6, I(4)); }
+        g.rp(cx-32,fl-24,13,14,I(2)); g.rp(cx+19,fl-24,13,14,I(2));
+        S.rays(cx,fl-30,20,34,DP,12);
+        g.circ(cx,fl-30,15,DP(1)); g.circ(cx-2,fl-32,11,DP(3));
+        g.circ(cx-4,fl-34,6,I(6));
+        S.ring(cx,fl-30,18,I,14);
+        g.circ(cx+2,fl-28,4,L(3)); g.circ(cx+1,fl-29,2,L(6));
+        for(i=0;i<7;i++) g.px(cx-22+i*7, fl-58, F(7));
+      } else {
+        for(i=0;i<5;i++){ var t6=Math.PI+(i+0.5)/5*Math.PI;
+          g.rp(cx+Math.round(Math.cos(t6)*26)-4, fl-16+Math.round(Math.sin(t6)*20)-4, 9,9, I(1)); }
+        g.circ(cx,fl-20,9,DP(1)); g.circ(cx-2,fl-22,5,DP(3));
+        rubble(); } }
+  });
+}
+
 function genSprite(chain){
   var rg=(typeof S!=='undefined'&&S)?(S.region||0):0;
+  if(rg===3) return genSpriteR4(chain);
   return (rg===2)? genSpriteR3(chain) : ((rg===1)? genSpriteR2(chain) : genSpriteR1(chain));
 }
 function monumentSprite(k, built){
   var rg=(typeof S!=='undefined'&&S)?(S.region||0):0;
+  if(rg===3) return monumentSpriteR4(k,built);
   return (rg===2)? monumentSpriteR3(k,built) : ((rg===1)? monumentSpriteR2(k,built) : monumentSpriteR1(k,built));
 }
 
@@ -3104,7 +3636,90 @@ function bakeBG3(){
       g.circ(bx2,by2,1+Math.round(rnd()*2), 'rgba(255,210,160,0.5)'); }
   }, false);
 }
-function bakeBGactive(){ var r=(S&&S.region)||0; return (r===2)?bakeBG3():((r===1)?bakeBG2():bakeBG()); }
+function bakeBG4(){
+  return sprite('bg4', VW, VH, function(c,g){
+    var S=shp(g), rnd=mulberry32(99004), x,y,i,k;
+    var I=RD.ice, DP=RD.deep, D=RD.dark4, L=RD.flame, B=RD.bone4, F=RD.frost, M=RD.brass4;
+    for(y=0;y<VH;y++){
+      var col;
+      if(y<300) col=mixHex('#0e2a4e','#1e5288', y/300);
+      else if(y<430) col=mixHex('#1e5288','#3e86b8', (y-300)/130);
+      else if(y<790) col=mixHex('#3e86b8','#8cc4dc', (y-430)/360);
+      else col=mixHex('#a8ccdc','#5e88a0', (y-790)/170);
+      g.rp(0,y,VW,1,col);
+    }
+    for(y=0;y<430;y+=7) for(x=0;x<VW;x+=7){          // свет сквозь лёд
+      var n=noise2(x*0.45,y*0.45);
+      var base=(y<300)? mixHex('#0e2a4e','#1e5288', y/300) : mixHex('#1e5288','#3e86b8',(y-300)/130);
+      if(n>0.66) g.rp(x,y,6,6, mixHex(base,'#d8f4ff',0.22));
+      else if(n<0.36) g.rp(x,y,6,6, mixHex(base,'#081830',0.22));
+    }
+    for(i=0;i<26;i++){                                // сосульки сверху
+      var ix=6+i*20, ilen=20+((i*37)%70);
+      g.poly([[ix-5,0],[ix+5,0],[ix,ilen]], mixHex('#8cc4dc','#e8f8ff',0.4));
+      g.poly([[ix-2,0],[ix+2,0],[ix,ilen-8]], '#eafaff');
+    }
+    for(i=0;i<9;i++){                                 // ледяные колонны
+      var sx0=14+i*58, sw=17+((i*7)%12), sy0=220+((i*41)%140);
+      var sc0=mixHex('#7cb4d0','#dff4ff',0.26+((i%3)*0.16));
+      g.rp(sx0,sy0,sw,430-sy0, sc0);
+      g.rp(sx0,sy0,3,430-sy0, '#f0fbff');
+      g.rp(sx0+sw-3,sy0,3,430-sy0, mixHex(sc0,'#123a5e',0.4));
+      for(k=sy0+10;k<428;k+=11) g.rp(sx0+2,k,sw-4,1, mixHex(sc0,'#123a5e',0.28));
+    }
+    for(i=0;i<170;i++){                               // взвесь снега
+      var dx0=Math.round(rnd()*VW), dy0=100+Math.round(rnd()*330);
+      g.rp(dx0,dy0,2,2, (i%3)?'rgba(232,248,255,0.8)':'rgba(160,200,240,0.6)');
+    }
+    for(i=0;i<4;i++){                                 // холодные лучи
+      var lx=60+i*140;
+      for(k=0;k<420;k+=8) g.rp(lx+Math.round(k*0.22), k, 14+((k/40)|0), 8, 'rgba(200,236,255,0.07)');
+    }
+    /* зона действия: дорога вниз с фонарями, рёбра, сани */
+    function roadLamp(px0,py0){
+      g.rp(px0,py0-34,7,34,M(3)); g.rp(px0,py0-34,3,34,M(5));
+      g.rp(px0-6,py0-48,19,15,D(1)); g.rp(px0-4,py0-46,15,11,I(2));
+      g.ell(px0+3,py0-40,4,5,L(3)); g.px(px0+2,py0-42,L(6));
+      g.rp(px0-7,py0-50,21,4,M(3));
+      for(var q=0;q<8;q++) g.px(px0+3+Math.round(Math.cos(q)*9), py0-40+Math.round(Math.sin(q)*9), 'rgba(255,200,110,0.25)');
+    }
+    function ribArch(ax,ay,ar){
+      for(var q2=0;q2<9;q2++){ var t2=Math.PI+(q2+0.5)/9*Math.PI;
+        g.rp(ax+Math.round(Math.cos(t2)*ar)-4, ay+Math.round(Math.sin(t2)*ar)-4, 9,9, B(3));
+        g.rp(ax+Math.round(Math.cos(t2)*ar)-2, ay+Math.round(Math.sin(t2)*ar)-2, 5,5, B(5)); }
+    }
+    for(i=0;i<7;i++) roadLamp(20+i*76, 520+((i*23)%110));
+    for(i=0;i<4;i++) ribArch(70+i*130, 690+((i*17)%50), 46);
+    for(i=0;i<70;i++){                                // обломки льда
+      var cx2=Math.round(rnd()*VW), cy2=460+Math.round(rnd()*320), cr=4+Math.round(rnd()*7);
+      g.poly([[cx2,cy2-cr],[cx2+cr,cy2+cr],[cx2-cr,cy2+cr]], I(2));
+      g.poly([[cx2,cy2-cr+2],[cx2+Math.round(cr*0.5),cy2+cr-1],[cx2-Math.round(cr*0.5),cy2+cr-1]], I(4));
+    }
+    for(i=0;i<40;i++){                                // тросы вдоль дороги
+      var rx=Math.round(rnd()*VW), ry=470+Math.round(rnd()*300);
+      for(k=0;k<14;k++) g.px(rx+k, ry+Math.round(Math.sin(k*0.4)*2), RD.rope4(4));
+    }
+    /* дно: утоптанный снег и синий лёд */
+    for(y=790;y<VH;y++) for(x=(y&1);x<VW;x+=2){
+      var s2=noise2(x*1.6,y*1.4);
+      if(s2>0.62) g.rp(x,y,1,1,'#eafaff'); else if(s2<0.38) g.rp(x,y,1,1,'#4a7898');
+    }
+    for(i=0;i<46;i++){
+      var kx=Math.round(rnd()*VW), ky=796+Math.round(rnd()*150), kr=3+Math.round(rnd()*7);
+      g.ell(kx,ky,kr,Math.round(kr*0.7), I(2)); g.ell(kx-1,ky-1,kr-2,Math.round(kr*0.45), I(5));
+      g.px(kx-2,ky-2, I(7));
+    }
+    for(i=0;i<70;i++){
+      var px2=Math.round(rnd()*VW), py2=795+Math.round(rnd()*160);
+      var cc=[I,B,M,DP][i%4];
+      g.rp(px2,py2,3,2, cc(4)); g.px(px2,py2-1, cc(6));
+    }
+    for(i=0;i<24;i++){ var bx2=Math.round(rnd()*VW), by2=Math.round(rnd()*770);
+      g.circ(bx2,by2,1+Math.round(rnd()*2), 'rgba(232,248,255,0.55)'); }
+  }, false);
+}
+function bakeBGactive(){ var r=(S&&S.region)||0;
+  return (r===3)?bakeBG4():((r===2)?bakeBG3():((r===1)?bakeBG2():bakeBG())); }
 function bakeBG(){
   return sprite('bg', VW, VH, function(c,g){
     var S=shp(g), rnd=mulberry32(31337), x,y,i,k;
@@ -3247,7 +3862,7 @@ function bakeBG(){
 /* ================= ГЕОМЕТРИЯ ЭКРАНА ================= */
 var HUD_H=126, COLS=6, ROWS=8, CELL=80, BX=30, BY=188;
 var BOARD_W=COLS*CELL, BOARD_H=ROWS*CELL, BOARD_B=BY+BOARD_H;   // 828
-var VERSION='v6.1';
+var VERSION='v6.2';
 
 var BTN={
   nav_game :{x:10, y:898, w:124, h:52, label:'DIVE'},
@@ -4430,7 +5045,160 @@ REGIONS[2].tierNames=R3_TIERS;
 REGIONS[2].decor=R3_DECOR;
 REGIONS[2].sets=R3_SETS;
 REGIONS[2].speech=R3_SPEECH;
+
+/* ================= РЕГИОН 4: THE ICE ROADS =================
+   Город подо льдом. Дороги здесь вели не наружу, а вниз.
+   Палитра: лёд, полярная синь, китовый жир, латунь фонарей. */
+
+var R4_CHAINS=[
+  {id:'ice',   name:'Icework',   max:10, tip:'Shard'},
+  {id:'rope',  name:'Haul Lines',max:10, tip:'Cord'},
+  {id:'lamp4', name:'Lamplight', max:10, tip:'Wick'},
+  {id:'bone',  name:'Whalebone', max:9,  tip:'Splinter'},
+  {id:'sled',  name:'Sledwork',  max:8,  tip:'Runner'}
+];
+var R4_TIERS=[
+  ['Ice Shard','Frost Pane','Clear Block','Cut Column','Ice Lens','Glacier Core',
+   'Blue Vault','Frozen Arch','Deep Ice','Heart of Winter'],
+  ['Cord','Hauling Rope','Knotted Line','Rope Coil','Winch Cable','Anchor Chain',
+   'Descent Line','Guide Rope','Deep Tether','The Long Line'],
+  ['Wick','Oil Lamp','Storm Lantern','Signal Lamp','Beacon Head','Mirror Lamp',
+   'Road Light','Waystation Fire','Great Beacon','Everlight'],
+  ['Bone Splinter','Rib Piece','Jaw Bone','Bone Runner','Whale Rib','Bone Arch',
+   'Ribbed Hall','Great Skeleton','The Last Whale'],
+  ['Runner','Sled Frame','Loaded Sled','Team Harness','Freight Sled','Descent Rig',
+   'Road Train','Convoy Master']
+];
+var R4_CHAPTERS=[
+  {name:'The Ice Gate',
+   line:'A doorway cut through forty feet of ice. It was cut from below.',
+   reveal:'The tool marks all point upward. Whatever made this door was already down there.',
+   req:[{c:0,t:5,n:2},{c:2,t:5,n:1}], coins:260, xp:60},
+  {name:'The Lamp Road',
+   line:'Lamps set every twenty paces, running downhill into the dark.',
+   reveal:'The oil was topped up to the last lamp. Someone walked the whole road, filling them, going down.',
+   req:[{c:2,t:6,n:2},{c:1,t:6,n:1},{c:0,t:6,n:1}], coins:500, xp:90},
+  {name:'The Bone Hall',
+   line:'A hall roofed with whale ribs, big enough to hold the whole town.',
+   reveal:'The benches face inward, in rings. They gathered here, and they gathered often.',
+   req:[{c:3,t:7,n:2},{c:0,t:8,n:1},{c:2,t:7,n:1}], coins:820, xp:130},
+  {name:'The Sled Yard',
+   line:'Sleds loaded and harnessed, pointing down the road, not up it.',
+   reveal:'Every sled is packed for a one-way trip. Nobody packed for coming back.',
+   req:[{c:4,t:4,n:1},{c:1,t:8,n:2},{c:3,t:8,n:1}], coins:1300, xp:180},
+  {name:'The Waystation',
+   line:'Halfway down. Fire pit, bunks, and a tally on the wall.',
+   reveal:'The tally counts people going down. There is no column for people coming up.',
+   req:[{c:2,t:9,n:2},{c:0,t:9,n:2},{c:1,t:9,n:1}], coins:2000, xp:240},
+  {name:'The Heart of Winter',
+   line:'The bottom of the road. The ice here is blue and it is not cold.',
+   reveal:'The road was never an escape. It was a way to reach this, and they went willingly.',
+   req:[{c:0,t:10,n:1},{c:2,t:10,n:1},{c:1,t:10,n:1}], coins:3800, xp:360}
+];
+var R4_SITE=[
+  {name:'The Ice Gate',       what:'relic chance on partial gear'},
+  {name:'The Lamp Road',      what:'charge regen speed'},
+  {name:'The Bone Hall',      what:'charge capacity'},
+  {name:'The Sled Yard',      what:'dive speed'},
+  {name:'The Waystation',     what:'reveals the next relic'},
+  {name:'The Heart of Winter',what:'coins from dives'}
+];
+var R4_RELICS=[
+  {name:'Gate Chisel', site:0,
+   story:'Used to cut the ice door. The blade is worn on the wrong face, as if every stroke was struck upward, from the inside.'},
+  {name:'Threshold Stone', site:0,
+   story:'Set at the mouth of the gate for luck. It is warm to the touch, and it is the only warm thing in the city.'},
+  {name:'Road Oil Can', site:1,
+   story:'For refilling the lamps along the descent. Empty, and its last drops were used on the deepest lamp of all.'},
+  {name:'Lamp Tally', site:1,
+   story:'A wooden board with a peg for every lamp on the road. Every peg is turned to lit. Nobody ever turned them back.'},
+  {name:'Rib Nail', site:2,
+   story:'Joined the whale ribs into a roof. Hand-forged, and there are four thousand of them in the hall.'},
+  {name:'Speaker\u2019s Bell', site:2,
+   story:'Rung to open a gathering in the bone hall. The clapper is wrapped in cloth, so it could be rung quietly.'},
+  {name:'Harness Buckle', site:3,
+   story:'From a sled team\u2019s traces. Fastened, not broken. The team was hitched and left standing.'},
+  {name:'Freight Manifest', site:3,
+   story:'Lists what each sled carried down: food, oil, tools, blankets. The last column is headed simply "for after".'},
+  {name:'Waystation Tally', site:4,
+   story:'Marks cut into a beam, one per person passing through. Two hundred and forty on the downward side. None on the other.'},
+  {name:'Bunk Blanket Pin', site:4,
+   story:'Held a blanket around a sleeper\u2019s shoulders. Found closed, on an empty bunk, beside a made bed.'},
+  {name:'Deep Lantern', site:5,
+   story:'The last lamp on the road, made to burn for months unattended. The oil is gone and the glass is clean, wiped from the inside.'},
+  {name:'Heart of Winter', site:5,
+   story:'A core of blue ice from the bottom of the road. It does not melt, it does not chill the hand, and held to the ear it is not silent.'}
+];
+var R4_CURIOS=[
+  {name:'Ice Saw',        note:'For cutting blocks from the ceiling. The teeth are set to cut on the pull, not the push.'},
+  {name:'Grip Cleat',     note:'Strapped under a boot for the descent. Only ever worn on the left foot, by everyone.'},
+  {name:'Oil Flask',      note:'Personal ration of lamp oil. Full, and stoppered with a knot nobody here ties.'},
+  {name:'Rope Toggle',    note:'Joined two hauling lines without a knot. Quick to link, and quicker to release.'},
+  {name:'Snow Goggles',   note:'Slitted bone against the glare. Found on the road, facing downhill.'},
+  {name:'Whistle Bone',   note:'Carved from a rib, one note only. Loud enough to carry the length of the road.'},
+  {name:'Bunk Token',     note:'Claimed a bed at the waystation for one night. This one was never handed back.'},
+  {name:'Ash Tin',        note:'Scattered on ice for grip. Half full, and the lid was closed carefully.'},
+  {name:'Cord Winder',    note:'For coiling line without tangles. Worn smooth by a hand that used it daily for years.'},
+  {name:'Ration Chit',    note:'Good for one meal at the waystation. Dated for a day that had not yet come.'},
+  {name:'Lamp Glass',     note:'A spare chimney for a storm lantern. Unbroken, wrapped in wool, carried a long way.'},
+  {name:'Bone Needle',    note:'For mending harness on the road. Threaded, with the thread still in it.'},
+  {name:'Sled Brake',     note:'A hooked bar dragged to slow a descent. Bent from use on one journey down.'},
+  {name:'Depth Mark',     note:'A painted stake showing how far the road has gone. The numbers keep going past the last one anyone recorded.'},
+  {name:'Fur Mitten',     note:'One of a pair. The other is not here, and this one is right-handed.'},
+  {name:'Tinder Box',     note:'Flint, steel and dry moss. Used once and then closed, at the very bottom.'},
+  {name:'Runner Wax',     note:'Rubbed on sled runners for speed. The block is worn to a sliver on the downhill side.'},
+  {name:'Blue Splinter',  note:'A chip from the deep ice. It is the only thing recovered here that is not cold.'}
+];
+var R4_DECOR=[
+  {id:'r4post',  name:'Ice Post',     price:80,   val:8,   bon:2,  set:0},
+  {id:'r4jar',   name:'Oil Jar',      price:150,  val:15,  bon:3,  set:1},
+  {id:'r4lamp',  name:'Road Lamp',    price:280,  val:28,  bon:5,  set:0},
+  {id:'r4bench', name:'Bone Bench',   price:480,  val:48,  bon:8,  set:0},
+  {id:'r4brazier',name:'Fire Pit',    price:820,  val:80,  bon:12, set:1},
+  {id:'r4figure',name:'Ice Figure',   price:1500, val:150, bon:19, set:2},
+  {id:'r4arch',  name:'Bone Arch',    price:2800, val:280, bon:28, set:2},
+  {id:'r4beacon',name:'Road Beacon',  price:5000, val:500, bon:40, set:1},
+  {id:'r4column',name:'Ice Column',   price:7500, val:750, bon:44, set:2},
+  {id:'r4mosaic',name:'Frost Mosaic', price:11000,val:1100,bon:48, set:0},
+  {id:'r4sled',  name:'Ceremonial Sled',price:16000,val:1600,bon:52,set:0},
+  {id:'r4skull', name:'Whale Skull',  price:23000,val:2300,bon:56, set:1},
+  {id:'r4heart', name:'Blue Lantern', price:33000,val:3300,bon:60, set:2}
+];
+var R4_SETS=[
+  {name:'The Lamp Walk',   items:[0,2,3],   bon:15, hint:'Ice Post \u00b7 Road Lamp \u00b7 Bone Bench'},
+  {name:'The Warm Camp',   items:[1,4,7],   bon:25, hint:'Oil Jar \u00b7 Fire Pit \u00b7 Road Beacon'},
+  {name:'The Bone Row',    items:[5,6],     bon:20, hint:'Ice Figure \u00b7 Bone Arch'},
+  {name:'The Deep Quarter',items:[8,12],    bon:22, hint:'Ice Column \u00b7 Blue Lantern'},
+  {name:'The Last Convoy', items:[9,10,11], bon:30, hint:'Frost Mosaic \u00b7 Ceremonial Sled \u00b7 Whale Skull'}
+];
+var R4_SPEECH=[
+  ['Forty feet of ice, and a door cut through it. Clean work.',
+   'Every tool mark points up. It was cut from below, by something already down there.'],
+  ['Lamps the whole way down, set at an even pace.',
+   'All of them were filled to the last one. Somebody walked down topping them up, and kept going.'],
+  ['A hall roofed with whale ribs. The whole town would fit in here.',
+   'The benches face inward, in rings. They met here often, and they met about something.'],
+  ['Sleds loaded and hitched, all pointing downhill.',
+   'Packed for a one-way trip. Not one of them packed for coming back.'],
+  ['Halfway down. Fire pit, bunks, a tally cut into the beam.',
+   'Two hundred and forty marks on the downward side. Not one on the other.'],
+  ['The ice at the bottom is blue, and it is not cold. That should not be.',
+   'The road was never an escape. It was the way to this, and they walked it willingly.']
+];
+
 REGIONS[2].musicMode='kiln';
+
+REGIONS[3].chapters=R4_CHAPTERS;
+REGIONS[3].relics=R4_RELICS;
+REGIONS[3].curios=R4_CURIOS;
+REGIONS[3].siteBonus=R4_SITE;
+REGIONS[3].chains=R4_CHAINS;
+REGIONS[3].tierNames=R4_TIERS;
+REGIONS[3].decor=R4_DECOR;
+REGIONS[3].sets=R4_SETS;
+REGIONS[3].speech=R4_SPEECH;
+REGIONS[3].musicMode='iceroads';
+
 
 
 
@@ -4964,6 +5732,24 @@ function note(freq,dur,gain,type){
 var MUSIC_STEP_MS=320;                          // вдвое чаще прежнего — партия живее
 /* Чистая функция расписания: и играет в браузере, и рендерится в WAV (раздел 5).
    Слои: бас — пад — арпеджио — колокол — «пузырьки». Громкость дышит по 16 шагов. */
+function musicIce(step){                         // четвёртый город: лидийский, светлый и пустой
+  var out=[], root=196.00, sc=[0,2,4,6,7,9,11,12,14,16];
+  function f(s,o){ return root*Math.pow(2,s/12)*Math.pow(2,o||0); }
+  var bar=Math.floor(step/8), inBar=step%8;
+  var breath=0.62+0.38*Math.sin(step/20*Math.PI);
+  var deg=(bar*3)%sc.length;
+  if(inBar===0) out.push({f:f(sc[deg],-2), d:4.2, g:0.075*breath, w:'sine'});
+  if(inBar===0||inBar===4){
+    out.push({f:f(sc[deg],-1), d:4.0, g:0.05*breath, w:'sine'});
+    out.push({f:f(sc[(deg+4)%sc.length],-1), d:3.6, g:0.035*breath, w:'sine'});
+  }
+  var arp=[0,4,2,5,7,5,2,4][inBar];
+  if(inBar%2===0) out.push({f:f(sc[(deg+arp)%sc.length],1), d:1.1, g:0.055*breath, w:'sine'});
+  if(step%7===0) out.push({f:f(sc[(bar+inBar)%sc.length],2), d:2.6, g:0.05*breath, w:'sine'});
+  if(inBar===5) out.push({f:f(sc[(deg+6)%sc.length],2), d:0.5, g:0.028*breath, w:'sine'});
+  if(step%32===31) out.push({f:f(sc[0],2), d:3.6, g:0.045*breath, w:'triangle'});
+  return out;
+}
 function musicKiln(step){                        // третий город: фригийский, жарче и тревожнее
   var out=[], root=155.56, sc=[0,1,4,5,7,8,11,12,13,16];
   function f(s,o){ return root*Math.pow(2,s/12)*Math.pow(2,o||0); }
@@ -5010,6 +5796,8 @@ function musicEvents(step, mode){
     return musicSalt(step);
   if(mode==='kiln')
     return musicKiln(step);
+  if(mode==='iceroads')
+    return musicIce(step);
   var M=(mode==='city')
     ? {root:174.61, sc:[0,2,4,7,9,11,12,14,16], sw:5, bell:[12,16,19]}     // город: светлее
     : (mode==='museum')
@@ -6478,7 +7266,7 @@ window.__DG={
   setNow:function(t){ NOW=t; }, siteUnlocked:siteUnlocked, plaque:plaque, curioBox:curioBox, curioPages:curioPages, curioPage:curioPage, curioAt:curioAt, CUR_PER:CUR_PER,
   siteDecor:siteDecor, siteBonus:siteBonus, siteBonusTenths:siteBonusTenths, siteBonusText:siteBonusText, SITE_BONUS_CAP:SITE_BONUS_CAP, population:population, setsAt:setsAt, setBonusTenths:setBonusTenths,
   REGIONS:REGIONS, region:region, regionIdx:regionIdx, regionUnlocked:regionUnlocked,
-  worldCard:worldCard, travelTo:travelTo, musicSalt:musicSalt, musicKiln:musicKiln,
+  worldCard:worldCard, travelTo:travelTo, musicSalt:musicSalt, musicKiln:musicKiln, musicIce:musicIce,
   ACHS:ACHS, achDone:achDone, achCount:achCount, achProgress:achProgress,
   checkAchievements:checkAchievements, achRow:achRow, achBanner:achBanner,
   get ACHFX(){ return ACHFX; }, sfxAchievement:sfxAchievement,
