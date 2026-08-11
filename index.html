@@ -4495,7 +4495,7 @@ function bakeBG(){
 /* ================= ГЕОМЕТРИЯ ЭКРАНА ================= */
 var HUD_H=126, COLS=6, ROWS=8, CELL=80, BX=30, BY=188;
 var BOARD_W=COLS*CELL, BOARD_H=ROWS*CELL, BOARD_B=BY+BOARD_H;   // 828
-var VERSION='v6.4';
+var VERSION='v6.6';
 
 var BTN={
   nav_game :{x:10, y:898, w:124, h:52, label:'DIVE'},
@@ -6449,7 +6449,7 @@ function checkAchievements(){
 
 /* ================= ОБЛАЧНЫЙ РЕЙТИНГ ================= */
 var FB_URL='https://sunken-city-4a06c-default-rtdb.europe-west1.firebasedatabase.app';   // адрес базы (без косой черты в конце!)
-var SYNC='Offline', TOPLIST=[], topOpen=false;
+var SYNC='Offline', TOPLIST=[], topOpen=false, FB_ERR='';
 var LAST_PUSH=0, LAST_PUSHED_SCORE=-1, PUSH_MIN_MS=60000;
 function pushScore(force){
   if(!FB_URL||!S.name) return false;
@@ -6461,16 +6461,22 @@ function pushScore(force){
   LAST_PUSH=now; LAST_PUSHED_SCORE=sc;
   SYNC='Syncing';
   try{
-    fetch(FB_URL+'/scores_sunken1.json',{method:'POST',cache:'no-store',
+    fetch(FB_URL+'/scores_sunken1.json',{method:'POST', cache:'no-store',
+      headers:{'Content-Type':'application/json'},   // без него CORS отбивает запрос
       body:JSON.stringify({name:S.name.slice(0,12), score:sc, lvl:S.lvl,
                            cities:S.regionsDone.length, ts:now})})
-    .then(function(r){ SYNC=r.ok?'Synced':'Offline'; })
-    .catch(function(){ SYNC='Offline'; });
-  }catch(e){ SYNC='Offline'; }
+    .then(function(r){
+      SYNC=r.ok?'Synced':'Offline';
+      if(!r.ok) FB_ERR='HTTP '+r.status;           // 401 = правила базы запрещают запись
+    })
+    .catch(function(e){ SYNC='Offline';
+      FB_ERR='network'+(e&&e.message?(': '+String(e.message).slice(0,40)):''); });
+  }catch(e){ SYNC='Offline'; FB_ERR='throw'; }
   return true;
 }
 function fetchTop(){
-  if(!FB_URL){ TOPLIST=[]; return; }
+  if(!FB_URL){ TOPLIST=[]; SYNC='Offline'; return; }
+  SYNC='Syncing';
   try{
     fetch(FB_URL+'/scores_sunken1.json',{cache:'no-store'}).then(function(r){return r.json();})
     .then(function(o){
@@ -6485,8 +6491,9 @@ function fetchTop(){
       a=[]; for(var nm2 in best) a.push(best[nm2]);
       a.sort(function(x,y){return (y.score||0)-(x.score||0);});
       TOPLIST=a.slice(0,10); SYNC='Synced';
-    }).catch(function(){ SYNC='Offline'; });
-  }catch(e){ SYNC='Offline'; }
+    }).catch(function(e){ SYNC='Offline';
+      FB_ERR='read'+(e&&e.message?(': '+String(e.message).slice(0,40)):''); });
+  }catch(e){ SYNC='Offline'; FB_ERR='throw'; }
 }
 
 /* ================= ЗВУК ================= */
@@ -7406,9 +7413,9 @@ function drawDiag(g){
   row('canvas on screen', Math.round(rr.width)+'x'+Math.round(rr.height), FIT_OK?'#9bf7a8':'#ff9b9b');
   row('layout retries', FIT_TRIES, FIT_TRIES>6?'#ffd487':'#ffffff');
   row('service worker', ('serviceWorker' in navigator)?(navigator.serviceWorker.controller?'active':'idle'):'none');
+  row('cloud', SYNC+(FB_ERR?(' \u2014 '+FB_ERR):''), (SYNC==='Synced')?'#9bf7a8':'#ffd487');
   y+=10;
-  text(g,'BACKUP shows a code — copy and keep it.', L, y, 13, '#bfe9f5'); y+=19;
-  text(g,'RESTORE takes that code back.', L, y, 13, '#bfe9f5');
+  text(g,'BACKUP shows a code — keep it. RESTORE takes it back.', L, y, 12, '#bfe9f5');
   button(g,BTN.backup,false,'rgba(30,120,90,0.95)');
   button(g,BTN.restore,false,'rgba(120,80,30,0.95)');
   button(g,BTN.closediag,false);
@@ -7778,7 +7785,7 @@ function onDown(x,y){
   if(S.screen!=='name' && inBtn(BTN.event,x,y)){ eventOpen=true; return; }
   if(inBtn(BTN.mute,x,y)){ S.mute=!S.mute; save(); return; }
   if(inBtn(BTN.nav_game,x,y)){ setScreen('game'); S.detail=-1; topOpen=false; save(); return; }
-  if(inBtn(BTN.nav_city,x,y)){ setScreen('city'); fetchTop(); save(); return; }
+  if(inBtn(BTN.nav_city,x,y)){ setScreen('city'); pushScore(true); fetchTop(); save(); return; }
   if(inBtn(BTN.nav_mus,x,y)){ setScreen('museum'); S.detail=-1; topOpen=false; save(); return; }
   if(inBtn(BTN.nav_shop,x,y)){ setScreen('shop'); S.detail=-1; topOpen=false; save(); return; }
   if(S.screen==='city'){
@@ -7812,7 +7819,7 @@ function onDown(x,y){
     if(inBtn(BTN.help,x,y)){ helpOpen=true; S.helpPage=0; return; }
     if(inBtn(BTN.achs,x,y)){ achOpen=true; checkAchievements(); return; }
     if(inBtn(BTN.worlds,x,y)){ worldsOpen=true; return; }
-    if(inBtn(BTN.top,x,y)){ topOpen=true; fetchTop(); return; }
+    if(inBtn(BTN.top,x,y)){ topOpen=true; pushScore(true); fetchTop(); return; }
     var i,c;
     for(i=0;i<6;i++){ c=siteCard(i);
       if(x>=c.x&&x<=c.x+c.w&&y>=c.y&&y<=c.y+c.h){
@@ -8055,6 +8062,7 @@ window.__DG={
   helpOpen:function(){ return helpOpen; }, setHelp:function(v){ helpOpen=!!v; },
   pushScore:pushScore, fetchTop:fetchTop, FB_SET:function(u){ FB_URL=u; },
   syncState:function(){ return SYNC; }, topList:function(){ return TOPLIST; },
+  fbError:function(){ return FB_ERR; },
   buyFund:buyFund, fundPrice:fundPrice, fundExpPts:fundExpPts, fundScore:fundScore,
   EVENTS:EVENTS, SEASONAL:SEASONAL, PRIZES:PRIZES, prizeSprite:prizeSprite, prizesFound:prizesFound,
   ARMOUR_NAMES:ARMOUR_NAMES, ARMOUR_MAX:ARMOUR_MAX, ARMOUR_CHANCE:ARMOUR_CHANCE,
