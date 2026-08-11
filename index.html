@@ -1690,13 +1690,386 @@ function r4Sled(c,g,t){
 
 var DRAW4=[r4Ice,r4Rope,r4Lamp,r4Bone,r4Sled];
 
+/* ================= ГРАФИКА РЕГИОНА 5: LAST HARBOUR ================= */
+var RE={
+  canvas5: R(buildRamp(['#6a5a3a','#b8a070','#e0d0a0','#fdf6e0'])),
+  wax    : R(buildRamp(['#6a0a52','#c01888','#f050b8','#ffb0e8'])),
+  stone5 : R(buildRamp(['#3a4410','#7a8a24','#b0c048','#e8f0a0'])),
+  green5 : R(buildRamp(['#0a3a1e','#12a04a','#4ae088','#c0ffd8'])),
+  timber : R(buildRamp(['#4a3a06','#8a6e10','#c0a428','#f4e07a'])),
+  copper : R(buildRamp(['#5a2a08','#b06a18','#e8a838','#ffe0a0'])),
+  night5 : R(buildRamp(['#0a1218','#1e3038','#3e5c68','#7a9ca8'])),
+  sea5   : R(buildRamp(['#08202a','#186074','#3ea0b8','#a8e0ec'])),
+  gold5  : R(buildRamp(['#6a5208','#c09818','#f0c848','#fff4b0']))
+};
+
+/* ---- ПАРУСИНА: от лоскута до последнего полотна ---- */
+function r5Sail(c,g,t){
+  var S=shp(g), rnd=mulberry32(5600+t), cx=43, cy=44, i;
+  var C=RE.canvas5, T=RE.timber, W=RE.wax, G=RE.green5, N=RE.night5;
+  function cloth(x,y,w,h,R2){
+    g.poly([[x,y],[x+w,y-2],[x+w-2,y+h],[x+2,y+h-3]], R2(3));
+    g.poly([[x+2,y+2],[x+Math.round(w*0.5),y],[x+Math.round(w*0.45),y+h-6],[x+4,y+h-6]], R2(5));
+    for(var q=0;q<h;q+=7) g.rp(x+2,y+3+q,w-4,1,R2(1));
+    g.px(x+3,y+3,R2(7));
+  }
+  if(t===1){ g.poly([[cx-10,cy+7],[cx-3,cy-9],[cx+9,cy-4],[cx+5,cy+9]], C(2));
+    g.poly([[cx-8,cy+5],[cx-3,cy-7],[cx+6,cy-3]], C(4));
+    for(i=0;i<4;i++) g.px(cx-6+i*4, cy+6-i, C(1));
+    g.px(cx-3,cy-4,C(7)); g.px(cx+7,cy+4,T(3));
+    g.px(cx-8,cy+6,C(0)); g.px(cx+2,cy-7,C(6)); g.px(cx-1,cy+2,W(3));
+    for(i=0;i<3;i++) g.px(cx-4+i*5, cy+5, N(4)); }
+  if(t===2){ cloth(cx-13,cy-11,26,22,C);
+    for(i=0;i<5;i++){ g.px(cx-9+i*5, cy-10, W(3)); g.px(cx-9+i*5, cy+9, W(3)); }
+    g.px(cx+11,cy+8,N(3)); }
+  if(t===3){ cloth(cx-16,cy-18,32,36,C);
+    g.rp(cx-18,cy-21,37,4,T(3)); g.rp(cx-18,cy-21,37,2,T(6));
+    for(i=0;i<4;i++) g.rp(cx-13+i*8,cy-18,2,34,C(1)); }
+  if(t===4){ g.rp(cx-3,cy-28,7,54,T(3)); g.rp(cx-3,cy-28,3,54,T(5));
+    cloth(cx+3,cy-24,22,30,C);
+    g.poly([[cx+3,cy+6],[cx+24,cy+2],[cx+22,cy+12],[cx+3,cy+14]], C(2));  // подобранный риф
+    for(i=0;i<4;i++) g.px(cx+6+i*5, cy+10, W(3));
+    g.rp(cx-8,cy+24,17,5,T(2)); }
+  if(t===5){ g.rp(cx-3,cy-30,7,58,T(3)); g.rp(cx-3,cy-30,3,58,T(5));
+    cloth(cx+3,cy-26,25,46,C);
+    g.rp(cx-13,cy-32,27,4,T(2)); g.rp(cx-13,cy-32,27,2,T(6));
+    for(i=0;i<4;i++) g.px(cx+7+i*5, cy-28, C(7));
+    g.rp(cx-9,cy+26,19,5,T(2)); }
+  if(t===6){ g.rp(cx-3,cy-30,7,58,T(3));
+    cloth(cx+3,cy-27,26,50,C);
+    cloth(cx-29,cy-20,25,42,C);
+    g.rp(cx-15,cy-33,31,5,T(2)); g.rp(cx-15,cy-33,31,2,T(6));
+    for(i=0;i<6;i++) g.px(cx-24+i*10, cy-24, N(4));
+    g.rp(cx-11,cy+27,23,5,T(2)); }
+  if(t===7){ g.rp(cx-3,cy-30,7,58,T(3));
+    for(i=0;i<3;i++){ var fy=cy-26+i*17;
+      g.poly([[cx+4,fy],[cx+28,fy+4],[cx+4,fy+13]], (i===0)?W(3):((i===1)?G(3):C(3)));
+      g.poly([[cx+5,fy+2],[cx+20,fy+5],[cx+5,fy+10]], (i===0)?W(5):((i===1)?G(5):C(5))); }
+    g.rp(cx-9,cy+27,19,5,T(2));
+    for(i=0;i<3;i++) g.px(cx-6+i*5, cy-33, C(6)); }
+  if(t===8){ g.rp(cx-3,cy-32,7,60,T(3));
+    for(i=0;i<4;i++){ var fy2=cy-28+i*14;
+      var pal=[W,G,C,RE.gold5][i];
+      g.poly([[cx+4,fy2],[cx+30,fy2+4],[cx+4,fy2+11]], pal(3));
+      g.poly([[cx+5,fy2+2],[cx+22,fy2+5],[cx+5,fy2+9]], pal(5)); }
+    for(i=0;i<3;i++){ var fy3=cy-20+i*14;
+      g.poly([[cx-4,fy3],[cx-28,fy3+4],[cx-4,fy3+11]], C(2)); }
+    g.rp(cx-11,cy+28,23,6,T(2)); }
+  if(t===9){ g.rp(cx-4,cy-34,9,64,T(3)); g.rp(cx-4,cy-34,4,64,T(5));
+    cloth(cx+5,cy-30,28,54,C);
+    cloth(cx-33,cy-22,27,46,C);
+    g.rp(cx-17,cy-37,35,6,T(2)); g.rp(cx-17,cy-37,35,2,T(7));
+    g.poly([[cx+5,cy-34],[cx+26,cy-30],[cx+5,cy-24]], RE.gold5(3));
+    for(i=0;i<5;i++) g.px(cx-26+i*11, cy-28, C(7));
+    g.rp(cx-13,cy+30,27,6,T(2)); }
+  if(t===10){ S.rays(cx,cy-4,24,38,RE.gold5,12);
+    g.rp(cx-4,cy-34,9,64,T(3)); g.rp(cx-4,cy-34,4,64,T(6));
+    cloth(cx+5,cy-31,29,56,C);
+    cloth(cx-34,cy-24,28,48,C);
+    g.poly([[cx+5,cy-35],[cx+28,cy-31],[cx+5,cy-25]], G(3));
+    g.poly([[cx+6,cy-33],[cx+22,cy-30],[cx+6,cy-27]], G(5));
+    g.rp(cx-18,cy-38,37,6,T(2)); g.rp(cx-18,cy-38,37,3,T(7));
+    for(i=0;i<7;i++) g.px(cx-26+i*9, cy-42, C(7));
+    g.rp(cx-14,cy+31,29,6,T(2)); }
+  g.dith(0,0,IS,IS, C(2), rnd, 0.14); g.dith(0,0,IS,IS, C(6), rnd, 0.07);
+  g.dith(0,0,IS,IS, T(3), rnd, 0.05);
+}
+
+/* ---- СУРГУЧ: от капли до последнего приказа ---- */
+function r5Seal(c,g,t){
+  var S=shp(g), rnd=mulberry32(5700+t), cx=43, cy=44, i;
+  var W=RE.wax, P=RE.canvas5, M=RE.copper, N=RE.night5, G=RE.gold5;
+  function paper(x,y,w,h){
+    g.rp(x,y,w,h,P(2)); g.rp(x+1,y+1,w-2,h-2,P(3));
+    g.rp(x+1,y+1,Math.max(2,(w-2)>>1),Math.max(2,(h-2)>>1),P(5));
+    for(var q=0;q<h-6;q+=5) g.rp(x+4,y+5+q,w-8,1,N(3));
+  }
+  function seal(x,y,r){
+    g.circ(x,y,r,W(2)); g.circ(x-1,y-1,r-2,W(3)); g.circ(x-2,y-2,Math.max(1,r-5),W(5));
+    for(var q=0;q<8;q++){ var a=q/8*Math.PI*2;
+      g.px(x+Math.round(Math.cos(a)*(r-1)), y+Math.round(Math.sin(a)*(r-1)), W(1)); }
+    g.px(x-2,y-2,W(7));
+  }
+  if(t===1){ seal(cx,cy,9); g.px(cx+6,cy+6,W(0));
+    for(i=0;i<3;i++) g.px(cx-8+i*7, cy+9, W(1)); }
+  if(t===2){ seal(cx,cy-2,13);
+    g.rp(cx-4,cy+10,9,12,W(3)); g.rp(cx-4,cy+10,3,12,W(5));
+    g.px(cx-5,cy-6,W(7)); }
+  if(t===3){ seal(cx,cy,15);
+    g.poly([[cx-6,cy-7],[cx+6,cy-7],[cx+4,cy+6],[cx-4,cy+6]], M(3));
+    g.poly([[cx-4,cy-5],[cx-1,cy-5],[cx-2,cy+4]], M(5));
+    for(i=0;i<10;i++){ var e=i/10*Math.PI*2;
+      g.px(cx+Math.round(Math.cos(e)*13), cy+Math.round(Math.sin(e)*13), W(6)); } }
+  if(t===4){ paper(cx-17,cy-20,34,40); seal(cx,cy+10,9);
+    for(i=0;i<3;i++) g.rp(cx-12,cy-14+i*7,24,1,N(4)); }
+  if(t===5){ paper(cx-19,cy-24,38,44);
+    g.rp(cx-19,cy-6,38,5,W(3)); g.rp(cx-19,cy-6,38,2,W(5));
+    seal(cx,cy-4,10);
+    for(i=0;i<3;i++) g.rp(cx-14,cy+6+i*6,28,1,N(4));
+    g.rp(cx-21,cy-27,42,4,M(2)); }
+  if(t===6){ g.rp(cx-20,cy-24,41,46,P(1)); paper(cx-17,cy-21,34,40);
+    seal(cx+9,cy+11,10);
+    g.rp(cx-14,cy-16,28,3,M(3)); g.rp(cx-14,cy-16,28,1,M(6));
+    for(i=0;i<5;i++) g.rp(cx-13,cy-8+i*6,26,1,N(4));
+    g.px(cx-15,cy-19,P(7)); }
+  if(t===7){ g.rp(cx-21,cy-26,43,50,M(2)); g.rp(cx-18,cy-23,37,44,P(2));
+    paper(cx-16,cy-21,33,40);
+    seal(cx,cy+6,12);
+    g.rp(cx-16,cy-16,33,4,M(3)); g.rp(cx-16,cy-16,33,2,M(6));
+    for(i=0;i<4;i++) g.px(cx-12+i*8, cy-24, G(5)); }
+  if(t===8){ for(i=0;i<3;i++) paper(cx-18+i*3, cy-24+i*3, 34, 40);
+    seal(cx+4,cy+10,12);
+    g.rp(cx-15,cy-20,32,4,M(3)); g.rp(cx-15,cy-20,32,2,M(6));
+    g.rp(cx-15,cy-2,32,3,W(3));
+    for(i=0;i<5;i++) g.px(cx-14+i*8, cy-27, P(7)); }
+  if(t===9){ g.rp(cx-23,cy-28,47,54,M(2)); g.rp(cx-20,cy-25,41,48,M(3));
+    paper(cx-17,cy-22,35,42);
+    seal(cx,cy+4,15);
+    for(i=0;i<12;i++){ var f=i/12*Math.PI*2;
+      g.rp(cx+Math.round(Math.cos(f)*20)-2, cy+4+Math.round(Math.sin(f)*20)-2, 4,4, G(4)); }
+    g.rp(cx-17,cy-18,35,4,M(6));
+    for(i=0;i<5;i++) g.px(cx-16+i*9, cy-31, G(6)); }
+  if(t===10){ S.rays(cx,cy,22,36,W,12);
+    g.rp(cx-24,cy-28,49,56,M(2)); g.rp(cx-21,cy-25,43,50,M(3));
+    paper(cx-18,cy-22,37,44);
+    seal(cx,cy+2,17);
+    for(i=0;i<14;i++){ var f2=i/14*Math.PI*2;
+      g.rp(cx+Math.round(Math.cos(f2)*23)-2, cy+2+Math.round(Math.sin(f2)*23)-2, 5,5, G(4)); }
+    S.ring(cx,cy+2,26,W,16);
+    for(i=0;i<6;i++) g.px(cx-20+i*8, cy-32, G(7)); }
+  g.dith(0,0,IS,IS, W(2), rnd, 0.13); g.dith(0,0,IS,IS, P(4), rnd, 0.07);
+  g.dith(0,0,IS,IS, M(3), rnd, 0.05);
+}
+
+/* ---- ПРИЧАЛ: от кнехта до длинного пирса ---- */
+function r5Quay(c,g,t){
+  var S=shp(g), rnd=mulberry32(5800+t), cx=43, fl=74, i;
+  var K=RE.stone5, T=RE.timber, M=RE.copper, SE=RE.sea5, G=RE.green5;
+  function plank(x,y,w,h){
+    g.rp(x,y,w,h,T(3)); g.rp(x,y,w,2,T(6)); g.rp(x,y+h-2,w,2,T(0));
+    for(var q=0;q<w;q+=9) g.rp(x+q,y,1,h,T(1));
+  }
+  function stoneBlock(x,y,w,h){
+    g.rp(x,y,w,h,K(3)); g.rp(x,y,w,3,K(6)); g.rp(x,y,4,h,K(5));
+    g.rp(x+w-3,y,3,h,K(1));
+    for(var r=0;r<h;r+=8){ g.rp(x,y+r,w,1,K(1));
+      for(var q2=(r/8)%2?0:7; q2<w; q2+=15) g.rp(x+q2,y+r,1,8,K(1)); }
+  }
+  if(t===1){ g.rp(cx-8,fl-22,17,22,K(3)); g.rp(cx-8,fl-22,17,3,K(6));
+    g.ell(cx,fl-22,9,4,K(4)); g.ell(cx-2,fl-23,6,3,K(6));
+    g.rp(cx-10,fl-4,21,4,K(1)); g.rp(cx-10,fl-4,21,1,K(4));
+    g.px(cx-6,fl-19,K(7)); g.px(cx+7,fl-8,K(0));
+    for(i=0;i<3;i++) g.px(cx-5+i*5, fl-12, M(3));
+    g.px(cx+5,fl-16,SE(4)); }
+  if(t===2){ g.rp(cx-7,fl-20,15,20,K(3)); g.ell(cx,fl-20,8,4,K(4));
+    for(i=0;i<14;i++){ var a=i/14*Math.PI*2;
+      g.rp(cx+Math.round(Math.cos(a)*12)-2, fl-26+Math.round(Math.sin(a)*8)-2, 5,5, M(3)); }
+    g.rp(cx-9,fl-4,19,4,K(1)); g.rp(cx-9,fl-4,19,1,K(4));
+    g.px(cx-4,fl-30,M(7)); g.px(cx+8,fl-8,K(0)); g.px(cx-6,fl-16,K(6));
+    for(i=0;i<3;i++) g.px(cx-4+i*4, fl-12, SE(4)); }
+  if(t===3){ g.rp(cx-6,fl-26,13,26,T(3)); g.rp(cx-6,fl-26,5,26,T(5));
+    g.rp(cx-13,fl-28,27,5,T(2)); g.rp(cx-13,fl-28,27,2,T(6));
+    g.rp(cx-16,fl-24,7,5,M(3)); g.rp(cx+9,fl-24,7,5,M(3));
+    g.rp(cx-11,fl-4,23,4,K(1)); }
+  if(t===4){ plank(cx-27,fl-14,54,10);
+    for(i=0;i<3;i++) g.rp(cx-20+i*18, fl-4, 6,4, T(2));
+    g.rp(cx-29,fl-18,10,6,K(3)); g.rp(cx+19,fl-18,10,6,K(3));
+    for(i=0;i<5;i++) g.px(cx-20+i*10, fl-18, SE(4)); }
+  if(t===5){ for(i=0;i<3;i++) stoneBlock(cx-24, fl-10-i*13, 48, 12);
+    g.rp(cx-26,fl-4,53,4,K(1)); g.rp(cx-26,fl-4,53,1,K(4));
+    for(i=0;i<4;i++) g.px(cx-18+i*11, fl-14, M(3));
+    for(i=0;i<3;i++) g.px(cx-12+i*10, fl-28, SE(4));
+    g.px(cx-22,fl-46,K(7));
+    for(i=0;i<4;i++) g.rp(cx-18+i*11, fl-52, 7,7, K(2));
+    for(i=0;i<5;i++) g.px(cx-20+i*10, fl-56, SE(5)); }
+  if(t===6){ stoneBlock(cx-27,fl-22,54,20);
+    plank(cx-24,fl-30,48,9);
+    g.rp(cx-8,fl-46,17,17,T(3)); g.rp(cx-8,fl-46,17,3,T(6));
+    S.orb(cx,fl-38,5,G);
+    g.rp(cx-29,fl-4,59,4,K(1));
+    for(i=0;i<5;i++) g.px(cx-20+i*10, fl-52, SE(5)); }
+  if(t===7){ stoneBlock(cx-28,fl-18,56,16);
+    plank(cx-26,fl-28,52,10);
+    for(i=0;i<3;i++){ var cy2=fl-44+i*5;
+      g.rp(cx-20,cy2,40,3,T(2)); }
+    g.rp(cx+14,fl-52,11,24,T(3)); g.rp(cx+14,fl-52,11,3,T(6));
+    for(i=0;i<4;i++) g.rp(cx-22+i*12, fl-34, 8,6, M(2));
+    g.rp(cx-30,fl-4,61,4,K(1)); }
+  if(t===8){ for(i=0;i<2;i++) stoneBlock(cx-30+i*31, fl-24, 29, 22);
+    plank(cx-28,fl-34,57,11);
+    for(i=0;i<9;i++) g.rp(cx-26+i*7, fl-40, 4,6, M(2));
+    g.rp(cx-32,fl-4,65,4,K(1));
+    for(i=0;i<6;i++) g.px(cx-24+i*10, fl-46, SE(5)); }
+  if(t===9){ for(i=0;i<3;i++) stoneBlock(cx-31, fl-12-i*14, 62, 13);
+    plank(cx-29,fl-48,59,10);
+    g.rp(cx+18,fl-66,13,20,K(3)); g.rp(cx+18,fl-66,13,3,K(6));
+    S.orb(cx+24,fl-60,5,G); S.rays(cx+24,fl-60,7,14,G,8);
+    g.rp(cx-33,fl-4,67,4,K(1));
+    for(i=0;i<7;i++) g.px(cx-26+i*9, fl-54, SE(5)); }
+  if(t===10){ S.rays(cx+2,fl-46,15,26,G,10);
+    for(i=0;i<3;i++) stoneBlock(cx-30, fl-12-i*13, 60, 12);
+    plank(cx-28,fl-46,57,9);
+    g.rp(cx-6,fl-60,13,16,K(3)); g.rp(cx-6,fl-60,13,3,K(7));
+    S.orb(cx,fl-55,6,G); S.ring(cx,fl-55,9,G,10);
+    for(i=0;i<8;i++) g.px(cx-26+i*8, fl-52, SE(6));
+    g.rp(cx-32,fl-4,65,4,K(1)); }
+  g.dith(0,0,IS,IS, K(2), rnd, 0.13); g.dith(0,0,IS,IS, T(4), rnd, 0.06);
+  g.dith(0,0,IS,IS, K(6), rnd, 0.05);
+}
+
+/* ---- НАВИГАЦИЯ: от зарубки до истинного пеленга ---- */
+function r5Star(c,g,t){
+  var S=shp(g), rnd=mulberry32(5900+t), cx=43, cy=44, i;
+  var M=RE.copper, N=RE.night5, P=RE.canvas5, G=RE.gold5, SE=RE.sea5;
+  function disc(x,y,r){
+    g.circ(x,y,r,M(2)); g.circ(x,y,r-2,M(3)); g.circ(x-2,y-2,r-6,M(5));
+    for(var q=0;q<16;q++){ var a=q/16*Math.PI*2;
+      g.px(x+Math.round(Math.cos(a)*(r-1)), y+Math.round(Math.sin(a)*(r-1)), M(6)); }
+  }
+  if(t===1){ g.rp(cx-2,cy-18,5,36,RE.timber(3)); g.rp(cx-2,cy-18,2,36,RE.timber(5));
+    for(i=0;i<7;i++) g.rp(cx-4,cy-14+i*5,9,1,N(3));
+    g.px(cx-2,cy-16,RE.timber(7)); }
+  if(t===2){ g.rp(cx-2,cy-20,5,40,M(3)); g.rp(cx-2,cy-20,2,40,M(5));
+    for(i=0;i<8;i++) g.rp(cx-5,cy-16+i*5,11,1,N(3));
+    g.ell(cx,cy-20,5,3,M(4)); g.px(cx-2,cy+16,M(0));
+    g.px(cx-2,cy-18,M(7)); g.px(cx+2,cy+8,M(1));
+    for(i=0;i<3;i++) g.px(cx+3,cy-10+i*9,G(4));
+    g.px(cx-4,cy+2,P(4)); }
+  if(t===3){ g.rp(cx-2,cy-22,5,44,M(3));
+    g.rp(cx-16,cy-8,33,5,M(3)); g.rp(cx-16,cy-8,33,2,M(6));
+    g.rp(cx-11,cy+6,23,5,M(2));
+    for(i=0;i<5;i++) g.px(cx-8+i*4, cy-6, N(4));
+    g.px(cx-2,cy-20,M(7)); g.px(cx+14,cy-5,M(0)); g.px(cx-14,cy-5,M(1));
+    for(i=0;i<3;i++) g.px(cx-6+i*6, cy+8, G(4));
+    g.px(cx+4,cy+14,P(4)); }
+  if(t===4){ g.rp(cx-20,cy-22,41,44,P(2)); g.rp(cx-18,cy-20,37,40,P(3));
+    for(i=0;i<16;i++){ var a2=i/16*Math.PI*2;
+      g.px(cx+Math.round(Math.cos(a2)*15), cy+Math.round(Math.sin(a2)*15), N(3)); }
+    for(i=0;i<5;i++){ var sx=cx-12+((i*11)%26), sy=cy-12+((i*7)%22);
+      g.px(sx,sy,G(5)); g.px(sx-1,sy,G(3)); g.px(sx+1,sy,G(3)); }
+    for(i=0;i<20;i++) g.px(cx-15+i, cy-8+Math.round(Math.sin(i*0.4)*5), SE(4)); }
+  if(t===5){ disc(cx,cy,19);
+    for(i=0;i<8;i++){ var a3=i/8*Math.PI*2;
+      for(var k=6;k<17;k++) g.px(cx+Math.round(Math.cos(a3)*k), cy+Math.round(Math.sin(a3)*k), M(1)); }
+    g.circ(cx,cy,5,N(2)); g.rp(cx-1,cy-14,2,14,M(6));
+    g.px(cx-5,cy-5,M(7)); }
+  if(t===6){ disc(cx,cy,22);
+    for(i=0;i<12;i++){ var a4=i/12*Math.PI*2;
+      g.rp(cx+Math.round(Math.cos(a4)*18)-1, cy+Math.round(Math.sin(a4)*18)-1, 3,3, G(4)); }
+    g.circ(cx,cy,11,N(1)); g.circ(cx-2,cy-2,7,N(3));
+    for(i=0;i<4;i++){ var a5=i/4*Math.PI*2+0.4;
+      g.rp(cx+Math.round(Math.cos(a5)*8)-1, cy+Math.round(Math.sin(a5)*8)-1, 3,3, G(6)); }
+    g.rp(cx-2,cy-26,5,7,M(3)); g.circ(cx,cy-28,4,M(4)); }
+  if(t===7){ g.rp(cx-27,cy-18,55,36,RE.timber(3)); g.rp(cx-27,cy-18,55,4,RE.timber(6));
+    g.rp(cx-24,cy-14,49,28,P(3)); g.rp(cx-24,cy-14,24,14,P(5));
+    for(i=0;i<20;i++) g.px(cx-20+i*2, cy-4+Math.round(Math.sin(i*0.5)*6), SE(4));
+    for(i=0;i<6;i++){ var sx2=cx-18+((i*13)%40), sy2=cy-10+((i*9)%22);
+      g.px(sx2,sy2,G(5)); }
+    disc(cx+14,cy+4,8);
+    for(i=0;i<4;i++) g.rp(cx-20+i*13, cy+20, 8,6, RE.timber(2)); }
+  if(t===8){ g.rp(cx-28,cy-24,57,44,RE.timber(3)); g.rp(cx-28,cy-24,57,4,RE.timber(7));
+    g.rp(cx-25,cy-20,51,36,P(3));
+    for(i=0;i<3;i++) for(var q3=0;q3<24;q3++)
+      g.px(cx-22+q3*2, cy-12+i*11+Math.round(Math.sin(q3*0.4)*4), SE(4));
+    for(i=0;i<8;i++){ var sx3=cx-20+((i*11)%42), sy3=cy-16+((i*13)%30);
+      g.px(sx3,sy3,G(5)); g.px(sx3-1,sy3,G(3)); }
+    for(i=0;i<6;i++){ var a6=Math.PI*1.2+i*0.13;      // сходящиеся пеленги
+      for(var k2=0;k2<26;k2++) g.px(cx+18+Math.round(Math.cos(a6)*k2), cy-6+Math.round(Math.sin(a6)*k2), M(4)); }
+    disc(cx+18,cy-6,5); }
+  if(t===9){ S.rays(cx,cy,20,32,G,12);
+    g.rp(cx-28,cy-24,57,46,RE.timber(3)); g.rp(cx-28,cy-24,57,4,RE.timber(7));
+    g.rp(cx-25,cy-20,51,38,N(1)); g.rp(cx-23,cy-18,47,34,N(2));
+    for(i=0;i<14;i++){ var sx4=cx-21+((i*13)%44), sy4=cy-15+((i*17)%30);
+      g.px(sx4,sy4,G(6)); g.px(sx4-1,sy4,G(4)); g.px(sx4+1,sy4,G(4)); }
+    for(i=0;i<8;i++){ var a7=Math.PI*1.15+i*0.10;
+      for(var k3=0;k3<30;k3++) g.px(cx+20+Math.round(Math.cos(a7)*k3), cy-4+Math.round(Math.sin(a7)*k3), M(5)); }
+    disc(cx+20,cy-4,6); S.orb(cx+20,cy-4,3,G); }
+  g.dith(0,0,IS,IS, M(2), rnd, 0.13); g.dith(0,0,IS,IS, N(3), rnd, 0.06);
+  g.dith(0,0,IS,IS, M(6), rnd, 0.05);
+}
+
+/* ---- КИЛЬ: от нагеля до ждущего корпуса ---- */
+function r5Keel(c,g,t){
+  var S=shp(g), rnd=mulberry32(6000+t), cx=43, cy=44, i;
+  var T=RE.timber, M=RE.copper, K=RE.stone5, C=RE.canvas5;
+  function timber(x,y,w,h){
+    g.rp(x,y,w,h,T(3)); g.rp(x,y,w,2,T(6)); g.rp(x,y,3,h,T(5));
+    g.rp(x+w-2,y,2,h,T(1));
+    for(var q=0;q<h;q+=8) g.rp(x+1,y+q,w-2,1,T(1));
+  }
+  if(t===1){ g.rp(cx-3,cy-15,7,30,T(2));
+    g.rp(cx-2,cy-14,5,28,T(3)); g.rp(cx-2,cy-14,2,28,T(5));
+    g.poly([[cx-2,cy+14],[cx+3,cy+14],[cx,cy+20]], T(1));
+    g.rp(cx-4,cy-16,9,4,T(2)); g.rp(cx-4,cy-16,9,1,T(6));
+    g.px(cx-2,cy-12,T(7)); g.px(cx+3,cy+10,T(0));
+    for(i=0;i<3;i++) g.px(cx+1,cy-4+i*7,M(3));
+    g.px(cx-3,cy+4,K(4)); g.px(cx+2,cy-8,M(6)); g.px(cx-1,cy+16,T(4));
+    g.px(cx+3,cy+2,C(4)); g.px(cx-3,cy-6,C(6)); g.px(cx+2,cy+7,M(1));
+    g.px(cx-1,cy+18,K(2)); }
+  if(t===2){ timber(cx-4,cy-20,9,40);
+    g.rp(cx-9,cy-22,19,5,M(3)); g.rp(cx-9,cy-22,19,2,M(6));
+    g.poly([[cx-4,cy+20],[cx+4,cy+20],[cx,cy+26]], T(1));
+    g.px(cx-3,cy-18,T(7)); }
+  if(t===3){ timber(cx-19,cy+8,39,9);
+    for(i=0;i<3;i++) timber(cx-14+i*12, cy-20, 8, 28);
+    for(i=0;i<3;i++) g.circ(cx-10+i*12, cy+12, 2, M(2)); }
+  if(t===4){ for(i=0;i<5;i++){ var by=cy-22+i*11;
+      g.poly([[cx-22,by],[cx+22,by],[cx+19,by+6],[cx-19,by+6]], T(3));
+      g.poly([[cx-19,by+1],[cx-2,by+1],[cx-4,by+5]], T(5)); }
+    g.rp(cx-4,cy-26,9,54,T(2)); g.rp(cx-4,cy-26,3,54,T(5));
+    for(i=0;i<4;i++){ g.circ(cx-14+i*10, cy+2, 2, M(2)); g.px(cx-15+i*10, cy+1, M(5)); }
+    g.px(cx-2,cy-24,T(7)); g.px(cx+3,cy+26,T(0));
+    for(i=0;i<3;i++) g.px(cx-16+i*12, cy-14, K(4)); }
+  if(t===5){ timber(cx-4,cy-26,9,54);
+    for(i=0;i<4;i++){ var ry=cy-20+i*13;
+      for(var k=0;k<20;k++){
+        var dx=Math.round(Math.sin(k/20*1.5)*9);
+        g.rp(cx+5+k*0.9, ry+dx, 3,3, (k%5<3)?T(3):T(5));
+        g.rp(cx-8-k*0.9, ry+dx, 3,3, (k%5<3)?T(3):T(5)); } }
+    for(i=0;i<3;i++) g.circ(cx, cy-14+i*13, 2, M(2)); }
+  if(t===6){ timber(cx-4,cy-30,9,60);
+    for(i=0;i<5;i++){ var ry2=cy-24+i*12;
+      for(var k2=0;k2<22;k2++){
+        var dx2=Math.round(Math.sin(k2/22*1.5)*10);
+        g.rp(cx+5+k2, ry2+dx2, 2,2, T(3));
+        g.rp(cx-6-k2, ry2+dx2, 2,2, T(3)); } }
+    g.rp(cx-26,cy+28,53,5,K(3)); g.rp(cx-26,cy+28,53,2,K(6));
+    for(i=0;i<4;i++) g.rp(cx-20+i*13, cy+33, 7,5, K(2)); }
+  if(t===7){ timber(cx-4,cy-30,9,56);
+    for(i=0;i<6;i++){ var ry3=cy-26+i*9;
+      for(var k3=0;k3<24;k3++){
+        var dx3=Math.round(Math.sin(k3/24*1.5)*8);
+        g.rp(cx+5+k3, ry3+dx3, 2,2, (k3%6<4)?T(3):T(5));
+        g.rp(cx-6-k3, ry3+dx3, 2,2, (k3%6<4)?T(3):T(5)); } }
+    g.poly([[cx-4,cy-30],[cx+5,cy-30],[cx,cy-37]], T(6));
+    g.rp(cx-28,cy+24,57,5,K(3));
+    for(i=0;i<5;i++) g.rp(cx-22+i*11, cy+29, 7,5, K(2)); }
+  if(t===8){ S.rays(cx,cy-6,20,30,C,10);
+    timber(cx-5,cy-30,11,56);
+    for(i=0;i<7;i++){ var ry4=cy-28+i*8;
+      for(var k4=0;k4<26;k4++){
+        var dx4=Math.round(Math.sin(k4/26*1.5)*8);
+        g.rp(cx+6+k4, ry4+dx4, 2,2, (k4%6<4)?T(3):T(5));
+        g.rp(cx-7-k4, ry4+dx4, 2,2, (k4%6<4)?T(3):T(5)); } }
+    g.poly([[cx-5,cy-30],[cx+6,cy-30],[cx,cy-38]], T(6));
+    for(i=0;i<4;i++) g.circ(cx, cy-22+i*13, 2, M(4));
+    g.rp(cx-30,cy+24,61,6,K(3)); g.rp(cx-30,cy+24,61,2,K(6));
+    for(i=0;i<5;i++) g.rp(cx-24+i*12, cy+30, 8,4, K(2)); }
+  g.dith(0,0,IS,IS, T(2), rnd, 0.13); g.dith(0,0,IS,IS, T(6), rnd, 0.06);
+  g.dith(0,0,IS,IS, M(3), rnd, 0.05);
+}
+
+var DRAW5=[r5Sail,r5Seal,r5Quay,r5Star,r5Keel];
+
+
 
 var DRAW2=[r2Brine,r2Iron,r2Crate,r2Reed,r2Rig];
 var SHADOW_PAL=[
   [RA.shell,RA.brass,RA.gold,RA.weed,RA.steel],
   [RB.salt, RB.iron, RB.wood2, RB.reed, RB.iron],
   [RC.glass3, RC.ash, RC.brick, RC.sand3, RC.iron3],
-  [RD.ice, RD.rope4, RD.brass4, RD.bone4, RD.wood4]
+  [RD.ice, RD.rope4, RD.brass4, RD.bone4, RD.wood4],
+  [RE.canvas5, RE.wax, RE.stone5, RE.copper, RE.timber]
 ];
 
 var DRAW=[drawShell,drawGear,drawGold,drawFlora,drawTool];
@@ -1716,7 +2089,7 @@ function itemSprite(chain,tier){
         var gy=py+Math.round(Math.sin(a2)*ph);
         if(gy<IS-3) g.px(43+Math.round(Math.cos(a2)*pw), gy, RA.glass(6)); }
     }
-    [DRAW,DRAW2,DRAW3,DRAW4][rg][chain](c,g,tier);
+    [DRAW,DRAW2,DRAW3,DRAW4,DRAW5][rg][chain](c,g,tier);
   });
 }
 
@@ -2543,6 +2916,7 @@ function decorSpriteR2(k){
 }
 function decorSprite(k){
   var rg=(typeof S!=='undefined'&&S)?(S.region||0):0;
+  if(rg===4) return (k<8)? decorSpriteR2(k) : decorSpriteR1x(k-8);
   if(rg===3) return (k<8)? decorSpriteR1(k) : decorSpriteR2x(k-8);
   if(rg===2) return (k<8)? decorSpriteR2(k) : decorSpriteR1x(k-8);
   if(rg===1) return (k<8)? decorSpriteR2(k) : decorSpriteR2x(k-8);
@@ -3447,13 +3821,184 @@ function monumentSpriteR4(k, built){
   });
 }
 
+
+/* ================= МЕСТА LAST HARBOUR ================= */
+function genSpriteR5(chain){
+  return sprite('genr5_'+chain, IS, IS, function(c,g){
+    var S=shp(g), rnd=mulberry32(6300+chain), cx=43, fl=76, i;
+    var K=RE.stone5, T=RE.timber, M=RE.copper, C=RE.canvas5, W=RE.wax, G=RE.green5, SE=RE.sea5, N=RE.night5;
+    g.rp(cx-30,fl-15,60,15,T(3)); g.rp(cx-30,fl-15,60,3,T(6));
+    g.rp(cx-30,fl-3,60,3,T(0));
+    for(i=0;i<6;i++) g.rp(cx-25+i*10,fl-15,2,15,T(1));
+    g.dith(cx-30,fl-15,60,15,T(2),rnd,0.4);
+    for(i=0;i<5;i++) g.px(cx-24+i*11, fl-16, SE(4));
+    if(chain===0){                                   /* ПАРУСИНА: раскроечный стол */
+      g.rp(cx-27,fl-34,54,20,T(3)); g.rp(cx-27,fl-34,54,4,T(6));
+      g.rp(cx-24,fl-30,48,13,C(3)); g.rp(cx-24,fl-30,24,7,C(5));
+      for(i=0;i<5;i++) g.rp(cx-20+i*10,fl-30,1,13,C(1));
+      g.rp(cx-14,fl-48,29,14,C(2)); g.rp(cx-12,fl-46,25,10,C(4));
+      for(i=0;i<4;i++) g.px(cx-9+i*7, fl-52, C(7));
+      g.rp(cx+16,fl-44,7,10,M(3)); g.px(cx+18,fl-42,M(6));
+    }
+    if(chain===1){                                   /* СУРГУЧ: стол печатей */
+      g.rp(cx-26,fl-28,52,14,T(3)); g.rp(cx-26,fl-28,52,4,T(6));
+      for(i=0;i<3;i++){ var px2=cx-18+i*17;
+        g.rp(px2-8,fl-40,17,12,C(2)); g.rp(px2-7,fl-39,15,10,C(3));
+        g.circ(px2,fl-30,4,W(3)); g.px(px2-1,fl-31,W(6)); }
+      g.rp(cx-6,fl-54,13,14,M(3)); g.rp(cx-6,fl-54,13,3,M(6));
+      g.rp(cx-3,fl-62,7,8,M(2)); g.circ(cx,fl-64,4,M(4));
+      for(i=0;i<3;i++) g.px(cx-8+i*8, fl-58, W(5));
+    }
+    if(chain===2){                                   /* ПРИЧАЛ: кнехты и швартовы */
+      for(i=0;i<3;i++){ var bx=cx-20+i*20;
+        g.rp(bx-7,fl-32,15,18,K(3)); g.rp(bx-7,fl-32,15,3,K(6));
+        g.ell(bx,fl-32,8,4,K(4)); g.ell(bx-2,fl-33,5,3,K(6)); }
+      for(i=0;i<26;i++) g.px(cx-24+i*2, fl-38+Math.round(Math.sin(i*0.4)*4), M(4));
+      g.rp(cx-30,fl-18,61,4,K(1));
+      for(i=0;i<5;i++) g.px(cx-20+i*10, fl-44, SE(5));
+    }
+    if(chain===3){                                   /* НАВИГАЦИЯ: стол лоцмана */
+      g.rp(cx-28,fl-30,56,16,T(3)); g.rp(cx-28,fl-30,56,4,T(7));
+      g.rp(cx-25,fl-26,50,9,C(3));
+      for(i=0;i<18;i++) g.px(cx-22+i*2, fl-22+Math.round(Math.sin(i*0.5)*3), SE(4));
+      for(i=0;i<5;i++){ var sx=cx-18+((i*13)%38);
+        g.px(sx,fl-24,RE.gold5(5)); g.px(sx-1,fl-24,RE.gold5(3)); }
+      g.circ(cx+14,fl-40,9,M(2)); g.circ(cx+14,fl-40,7,M(3)); g.circ(cx+12,fl-42,4,M(5));
+      g.rp(cx-20,fl-42,10,12,N(2)); g.rp(cx-20,fl-42,10,3,N(4));
+      for(i=0;i<3;i++) g.px(cx-4+i*7, fl-48, RE.gold5(6));
+    }
+    if(chain===4){                                   /* КИЛЬ: стапель */
+      g.rp(cx-30,fl-20,61,6,K(3)); g.rp(cx-30,fl-20,61,2,K(6));
+      for(i=0;i<4;i++) g.rp(cx-24+i*15, fl-14, 8,12, K(2));
+      g.rp(cx-4,fl-52,9,32,T(3)); g.rp(cx-4,fl-52,4,32,T(5));
+      for(i=0;i<4;i++){ var ry=fl-46+i*8;
+        for(var k=0;k<16;k++){ var dx=Math.round(Math.sin(k/16*1.5)*7);
+          g.rp(cx+5+k, ry+dx, 2,2, T(3)); g.rp(cx-6-k, ry+dx, 2,2, T(3)); } }
+      g.poly([[cx-4,fl-52],[cx+5,fl-52],[cx,fl-58]], T(6));
+      for(i=0;i<3;i++) g.px(cx-8+i*8, fl-62, C(5));
+    }
+  });
+}
+function monumentSpriteR5(k, built){
+  return sprite('monr5_'+k+(built?'b':'r'), 96, 96, function(c,g){
+    var S=shp(g), rnd=mulberry32(6500+k*7+(built?1:0)), i, cx=48, fl=90;
+    var K=RE.stone5, T=RE.timber, M=RE.copper, C=RE.canvas5, W=RE.wax, G=RE.green5, SE=RE.sea5, N=RE.night5;
+    function base(w,h){
+      g.rp(cx-w,fl-h,w*2,h,K(3)); g.rp(cx-w,fl-h,w*2,3,K(6));
+      g.rp(cx-w,fl-3,w*2,3,K(0));
+      for(i=0;i<5;i++) g.rp(cx-w+4+i*Math.round((w*2-8)/5),fl-h+2,3,h-4,K(1));
+      g.dith(cx-w,fl-h,w*2,h,K(2),rnd,0.4);
+    }
+    function rubble(){
+      for(i=0;i<9;i++){ var rx=cx-30+Math.round(rnd()*60), ry=fl-8-Math.round(rnd()*7);
+        var rr=3+Math.round(rnd()*4);
+        g.ell(rx,ry,rr,Math.round(rr*0.7),K(2)); g.ell(rx-1,ry-1,rr-2,Math.round(rr*0.4),K(4));
+        g.px(rx-1,ry-2,K(6)); g.px(rx+rr-2,ry+1,K(0)); }
+      for(i=0;i<6;i++) g.px(cx-24+i*9, fl-12, SE(4));
+      for(i=0;i<5;i++) g.px(cx-20+i*9, fl-15, T(4));
+      g.dith(cx-32,fl-30,64,26, K(1), rnd, 0.16);
+      g.dith(cx-32,fl-30,64,26, T(5), rnd, 0.10);
+    }
+    function wall(x,y,w,h){
+      g.rp(x,y,w,h,K(3)); g.rp(x,y,w,2,K(6)); g.rp(x,y,3,h,K(5));
+      g.rp(x+w-3,y,3,h,K(1));
+      for(var q=0;q<h;q+=7){ g.rp(x,y+q,w,1,K(1));
+        for(var z=(q/7)%2?0:6; z<w; z+=13) g.rp(x+z,y+q,1,7,K(1)); }
+      g.dith(x,y,w,h,K(2),rnd,0.3);
+    }
+    if(k===0){ base(32,10);                          /* ВНЕШНИЙ МОЛ */
+      if(built){
+        for(i=0;i<4;i++) wall(cx-32+i*17, fl-14-i*6, 17, 14+i*6);
+        g.rp(cx-34,fl-42,68,5,K(4)); g.rp(cx-34,fl-42,68,2,K(7));
+        for(i=0;i<7;i++) g.px(cx-26+i*9, fl-48, SE(5));
+        g.rp(cx+22,fl-58,11,16,K(3)); S.orb(cx+27,fl-52,4,G);
+      } else { wall(cx-28,fl-24,56,14);
+        g.poly([[cx-30,fl-24],[cx+24,fl-24],[cx+8,fl-36],[cx-16,fl-32]], K(1));
+        rubble(); } }
+    if(k===1){ base(26,10);                          /* СИГНАЛЬНАЯ МАЧТА */
+      if(built){
+        g.rp(cx-5,fl-70,11,60,T(3)); g.rp(cx-5,fl-70,4,60,T(5));
+        for(i=0;i<7;i++) g.rp(cx-5,fl-64+i*8,11,2,T(1));
+        for(i=0;i<4;i++){ var fy=fl-66+i*13;
+          var pal=[W,G,C,RE.gold5][i];
+          g.poly([[cx+6,fy],[cx+28,fy+4],[cx+6,fy+10]], pal(3));
+          g.poly([[cx+7,fy+2],[cx+20,fy+5],[cx+7,fy+8]], pal(5)); }
+        g.rp(cx-18,fl-74,37,5,T(2)); g.rp(cx-18,fl-74,37,2,T(6));
+        for(i=0;i<3;i++) g.rp(cx-14+i*13, fl-12, 9,7, K(2));
+      } else { g.rp(cx-4,fl-40,9,30,T(1));
+        g.poly([[cx-4,fl-40],[cx+18,fl-30],[cx+16,fl-26],[cx-4,fl-34]], T(0));
+        rubble(); } }
+    if(k===2){ base(30,10);                          /* ДОМ ПАТЕНТОВ */
+      if(built){ wall(cx-28,fl-46,56,36);
+        for(i=0;i<3;i++){ var wx=cx-18+i*18;
+          g.rp(wx-7,fl-40,15,14,N(1)); g.rp(wx-6,fl-39,13,12,C(3));
+          g.circ(wx,fl-32,3,W(3)); }
+        g.poly([[cx-32,fl-46],[cx+32,fl-46],[cx+22,fl-62],[cx-22,fl-62]], T(3));
+        g.poly([[cx-27,fl-48],[cx+27,fl-48],[cx+19,fl-59],[cx-19,fl-59]], T(5));
+        for(i=0;i<9;i++) g.rp(cx-19+i*5,fl-60,3,14,T(1));
+        g.rp(cx-8,fl-70,17,9,M(3)); g.rp(cx-8,fl-70,17,3,M(6));
+        g.circ(cx,fl-74,5,W(3)); g.px(cx-2,fl-76,W(6));
+      } else { wall(cx-26,fl-28,52,18);
+        g.poly([[cx-28,fl-28],[cx+22,fl-28],[cx+6,fl-42],[cx-16,fl-38]], T(1));
+        for(i=0;i<2;i++) g.rp(cx-14+i*20,fl-24,12,12,N(1));
+        rubble(); } }
+    if(k===3){ base(30,8);                           /* СТОЛ ЛОЦМАНА */
+      if(built){
+        g.rp(cx-30,fl-32,61,18,T(3)); g.rp(cx-30,fl-32,61,4,T(7));
+        g.rp(cx-27,fl-28,55,11,C(3));
+        for(i=0;i<24;i++) g.px(cx-24+i*2, fl-23+Math.round(Math.sin(i*0.45)*4), SE(4));
+        for(i=0;i<8;i++){ var sx2=cx-22+((i*13)%46);
+          g.px(sx2,fl-25,RE.gold5(6)); g.px(sx2-1,fl-25,RE.gold5(4)); }
+        for(i=0;i<7;i++){ var a=Math.PI*1.18+i*0.11;
+          for(var k2=0;k2<26;k2++) g.px(cx+20+Math.round(Math.cos(a)*k2), fl-20+Math.round(Math.sin(a)*k2), M(5)); }
+        g.circ(cx+20,fl-20,6,M(2)); g.circ(cx+19,fl-21,4,M(5));
+        for(i=0;i<4;i++) g.rp(cx-22+i*15, fl-14, 8,12, T(2));
+        for(i=0;i<5;i++) g.px(cx-16+i*9, fl-40, RE.gold5(6));
+      } else { g.rp(cx-26,fl-22,53,10,T(1));
+        for(i=0;i<2;i++) g.rp(cx-16+i*24,fl-12,9,10,T(0));
+        rubble(); } }
+    if(k===4){ base(32,8);                           /* ЖДУЩИЙ КОРПУС */
+      if(built){
+        for(i=0;i<4;i++) g.rp(cx-28+i*17, fl-16, 10,10, K(2));
+        g.rp(cx-5,fl-64,11,50,T(3)); g.rp(cx-5,fl-64,4,50,T(5));
+        for(i=0;i<6;i++){ var ry2=fl-58+i*8;
+          for(var k3=0;k3<20;k3++){ var dx2=Math.round(Math.sin(k3/20*1.5)*9);
+            g.rp(cx+6+k3, ry2+dx2, 2,2, (k3%6<4)?T(3):T(5));
+            g.rp(cx-7-k3, ry2+dx2, 2,2, (k3%6<4)?T(3):T(5)); } }
+        g.poly([[cx-5,fl-64],[cx+6,fl-64],[cx,fl-72]], T(6));
+        for(i=0;i<4;i++) g.circ(cx, fl-56+i*12, 2, M(4));
+        for(i=0;i<5;i++) g.px(cx-18+i*9, fl-76, C(6));
+      } else {
+        for(i=0;i<3;i++) g.rp(cx-22+i*18, fl-14, 9,8, K(1));
+        g.rp(cx-4,fl-40,9,26,T(1));
+        for(i=0;i<3;i++){ var ry3=fl-34+i*9;
+          for(var k4=0;k4<12;k4++) g.rp(cx+5+k4, ry3+Math.round(Math.sin(k4/12*1.5)*5), 2,2, T(0)); }
+        rubble(); } }
+    if(k===5){ base(34,10);                          /* ДЛИННЫЙ ПИРС */
+      if(built){
+        for(i=0;i<4;i++) wall(cx-34+i*18, fl-16-i*4, 18, 14+i*4);
+        g.rp(cx-36,fl-34,72,6,T(3)); g.rp(cx-36,fl-34,72,2,T(6));
+        for(i=0;i<9;i++) g.rp(cx-32+i*8, fl-28, 3,12, T(1));
+        g.rp(cx+22,fl-56,13,22,K(3)); g.rp(cx+22,fl-56,13,3,K(7));
+        S.orb(cx+28,fl-49,6,G); S.rays(cx+28,fl-49,8,16,G,10);
+        S.ring(cx+28,fl-49,10,G,10);
+        for(i=0;i<8;i++) g.px(cx-30+i*8, fl-42, SE(6));
+      } else {
+        for(i=0;i<3;i++) wall(cx-30+i*20, fl-16, 18, 14);
+        g.poly([[cx-30,fl-30],[cx+10,fl-26],[cx+6,fl-20],[cx-28,fl-24]], K(1));
+        g.rp(cx+18,fl-38,10,22,K(0)); rubble(); } }
+  });
+}
+
 function genSprite(chain){
   var rg=(typeof S!=='undefined'&&S)?(S.region||0):0;
+  if(rg===4) return genSpriteR5(chain);
   if(rg===3) return genSpriteR4(chain);
   return (rg===2)? genSpriteR3(chain) : ((rg===1)? genSpriteR2(chain) : genSpriteR1(chain));
 }
 function monumentSprite(k, built){
   var rg=(typeof S!=='undefined'&&S)?(S.region||0):0;
+  if(rg===4) return monumentSpriteR5(k,built);
   if(rg===3) return monumentSpriteR4(k,built);
   return (rg===2)? monumentSpriteR3(k,built) : ((rg===1)? monumentSpriteR2(k,built) : monumentSpriteR1(k,built));
 }
@@ -3718,8 +4263,96 @@ function bakeBG4(){
       g.circ(bx2,by2,1+Math.round(rnd()*2), 'rgba(232,248,255,0.55)'); }
   }, false);
 }
+function bakeBG5(){
+  return sprite('bg5', VW, VH, function(c,g){
+    var S=shp(g), rnd=mulberry32(11005), x,y,i,k;
+    var K=RE.stone5, T=RE.timber, M=RE.copper, C=RE.canvas5, G=RE.green5, SE=RE.sea5, N=RE.night5, W=RE.wax;
+    for(y=0;y<VH;y++){
+      var col;
+      if(y<300) col=mixHex('#2a1a3a','#8a4a3a', y/300);
+      else if(y<430) col=mixHex('#8a4a3a','#d08a4a', (y-300)/130);
+      else if(y<790) col=mixHex('#d08a4a','#e0b070', (y-430)/360);
+      else col=mixHex('#9a7248','#4a3a2a', (y-790)/170);
+      g.rp(0,y,VW,1,col);
+    }
+    for(y=0;y<430;y+=7) for(x=0;x<VW;x+=7){          // закатная рябь
+      var n=noise2(x*0.45,y*0.45);
+      var base=(y<300)? mixHex('#2a1a3a','#8a4a3a', y/300) : mixHex('#8a4a3a','#d08a4a',(y-300)/130);
+      if(n>0.66) g.rp(x,y,6,6, mixHex(base,'#ffd8a0',0.22));
+      else if(n<0.36) g.rp(x,y,6,6, mixHex(base,'#1a1024',0.20));
+    }
+    for(i=0;i<3;i++){                                 // закатное солнце и дорожка
+      g.circ(150, 190, 34-i*10, mixHex('#ffca70','#fff0c0', i*0.3));
+    }
+    for(k=200;k<430;k+=6){
+      var wsp=26+Math.round(Math.sin(k*0.12)*10);
+      g.rp(150-wsp/2, k, wsp, 3, 'rgba(255,214,140,0.22)');
+    }
+    for(i=0;i<12;i++){                                // мачты вдалеке
+      var mx=24+i*44, mh=60+((i*29)%80), my=430-mh;
+      g.rp(mx,my,4,mh, mixHex('#6a4a38','#c09070',0.3));
+      g.rp(mx-1,my,2,mh, '#d8b090');
+      for(k=0;k<3;k++) g.rp(mx+4, my+8+k*16, 12+((i+k)%8), 3, 'rgba(232,216,180,0.5)');
+    }
+    for(i=0;i<190;i++){                               // взвесь
+      var dx0=Math.round(rnd()*VW), dy0=100+Math.round(rnd()*330);
+      g.rp(dx0,dy0,2,2, (i%3)?'rgba(255,226,180,0.7)':'rgba(180,140,110,0.5)');
+    }
+    /* зона действия: причальная стенка, кнехты, штабеля */
+    function quayWall(px0,py0,pw,ph){
+      g.rp(px0,py0,pw,ph, K(3)); g.rp(px0,py0,pw,3, K(6));
+      for(var r=0;r<ph;r+=9){ g.rp(px0,py0+r,pw,1, K(1));
+        for(var q=(r/9)%2?0:8; q<pw; q+=17) g.rp(px0+q,py0+r,1,9, K(1)); }
+      g.dith(px0,py0,pw,ph, K(2), rnd, 0.3);
+    }
+    function bollard(bx,by){
+      g.rp(bx,by-18,13,18,K(3)); g.rp(bx,by-18,13,3,K(6));
+      g.ell(bx+6,by-18,7,3,K(4));
+      for(var q2=0;q2<10;q2++) g.px(bx+13+q2, by-16+Math.round(Math.sin(q2*0.5)*3), M(4));
+    }
+    for(i=0;i<4;i++) quayWall(2+i*136, 470+((i*29)%60), 130, 200);
+    for(i=0;i<8;i++) bollard(16+i*66, 520+((i*23)%80));
+    for(i=0;i<7;i++){                                 // штабеля ящиков
+      var kx=24+i*72, ky=650+((i*31)%90);
+      for(var q3=0;q3<2;q3++){
+        g.rp(kx,ky-q3*20,26,18, T(3)); g.rp(kx,ky-q3*20,26,3, T(6));
+        g.rp(kx,ky-q3*20,26,18, 'rgba(0,0,0,0)');
+        g.rp(kx+2,ky-q3*20+2,22,14, T(3));
+        g.rp(kx,ky-q3*20+8,26,2, T(1)); }
+    }
+    for(i=0;i<50;i++){                                // канаты
+      var rx=Math.round(rnd()*VW), ry=470+Math.round(rnd()*300);
+      for(k=0;k<14;k++) g.px(rx+k, ry+Math.round(Math.sin(k*0.4)*2), M(4));
+    }
+    for(i=0;i<40;i++){                                // сургучные метки на ящиках
+      var wx=Math.round(rnd()*VW), wy=520+Math.round(rnd()*260);
+      g.circ(wx,wy,2,W(3)); g.px(wx-1,wy-1,W(6));
+    }
+    /* дно: мокрый камень причала */
+    for(y=790;y<VH;y++) for(x=(y&1);x<VW;x+=2){
+      var s2=noise2(x*1.6,y*1.4);
+      if(s2>0.62) g.rp(x,y,1,1,'#e8cfa0'); else if(s2<0.38) g.rp(x,y,1,1,'#5a4630');
+    }
+    for(i=0;i<46;i++){
+      var kx2=Math.round(rnd()*VW), ky2=796+Math.round(rnd()*150), kr=3+Math.round(rnd()*7);
+      g.ell(kx2,ky2,kr,Math.round(kr*0.7), K(3)); g.ell(kx2-1,ky2-1,kr-2,Math.round(kr*0.45), K(5));
+      g.px(kx2-2,ky2-2, K(7));
+    }
+    for(i=0;i<80;i++){
+      var px2=Math.round(rnd()*VW), py2=795+Math.round(rnd()*160);
+      var cc=[C,M,SE,T][i%4];
+      g.rp(px2,py2,3,2, cc(4)); g.px(px2,py2-1, cc(6));
+    }
+    for(i=0;i<10;i++){                                 // зелёные огни на дальнем пирсе
+      g.circ(40+i*52, 452+((i*17)%20), 2, G(5));
+      g.circ(40+i*52, 452+((i*17)%20), 4, 'rgba(74,224,136,0.20)');
+    }
+    for(i=0;i<24;i++){ var bx2=Math.round(rnd()*VW), by2=Math.round(rnd()*770);
+      g.circ(bx2,by2,1+Math.round(rnd()*2), 'rgba(255,226,180,0.5)'); }
+  }, false);
+}
 function bakeBGactive(){ var r=(S&&S.region)||0;
-  return (r===3)?bakeBG4():((r===2)?bakeBG3():((r===1)?bakeBG2():bakeBG())); }
+  return (r===4)?bakeBG5():((r===3)?bakeBG4():((r===2)?bakeBG3():((r===1)?bakeBG2():bakeBG()))); }
 function bakeBG(){
   return sprite('bg', VW, VH, function(c,g){
     var S=shp(g), rnd=mulberry32(31337), x,y,i,k;
@@ -3862,7 +4495,7 @@ function bakeBG(){
 /* ================= ГЕОМЕТРИЯ ЭКРАНА ================= */
 var HUD_H=126, COLS=6, ROWS=8, CELL=80, BX=30, BY=188;
 var BOARD_W=COLS*CELL, BOARD_H=ROWS*CELL, BOARD_B=BY+BOARD_H;   // 828
-var VERSION='v6.2';
+var VERSION='v6.4';
 
 var BTN={
   nav_game :{x:10, y:898, w:124, h:52, label:'DIVE'},
@@ -3915,7 +4548,7 @@ var REGIONS=[
    hook:'Under the ice, every road leads downward.',
    locked:true},
   {id:'lastharbour', name:'Last Harbour',
-   hook:'Where the ones who got out were going.',
+   hook:'Where the ones who got out were going. The road did not end here either.',
    locked:true}
 ];
 function region(){ return REGIONS[Math.min(S?(S.region||0):0, REGIONS.length-1)]; }
@@ -5197,7 +5830,161 @@ REGIONS[3].tierNames=R4_TIERS;
 REGIONS[3].decor=R4_DECOR;
 REGIONS[3].sets=R4_SETS;
 REGIONS[3].speech=R4_SPEECH;
+
+/* ================= РЕГИОН 5: LAST HARBOUR =================
+   Куда ушли те, кто успел. Гавань, построенная в спешке и
+   брошенная в порядке. Палитра: закатная медь, тёмная вода,
+   парусина, сургуч и зелёный сигнальный огонь. */
+
+var R5_CHAINS=[
+  {id:'sail',  name:'Sailcloth', max:10, tip:'Scrap'},
+  {id:'seal',  name:'Sealwork',  max:10, tip:'Wax'},
+  {id:'quay',  name:'Quayside',  max:10, tip:'Bollard'},
+  {id:'star',  name:'Wayfinding',max:9,  tip:'Notch'},
+  {id:'keel',  name:'Keelwork',  max:8,  tip:'Peg'}
+];
+var R5_TIERS=[
+  ['Cloth Scrap','Patch','Sail Panel','Reefed Sail','Full Sail','Storm Canvas',
+   'Signal Flag','Fleet Colours','Admiral\u2019s Sail','The Last Canvas'],
+  ['Wax Drop','Seal Blank','Stamped Seal','Sealed Letter','Bound Packet','Ledger Seal',
+   'Harbour Warrant','Sealed Orders','Master Seal','The Final Order'],
+  ['Bollard','Mooring Ring','Cleat Post','Gangplank','Quay Steps','Jetty Head',
+   'Loading Pier','Harbour Arm','Outer Mole','The Long Quay'],
+  ['Notch Stick','Sighting Rod','Cross Staff','Star Chart','Bearing Ring','Sea Astrolabe',
+   'Pilot\u2019s Table','Deep Chart','The True Bearing'],
+  ['Trenail','Keel Peg','Rib Timber','Strake','Frame Set','Keel Line',
+   'Hull Bones','The Waiting Hull']
+];
+var R5_CHAPTERS=[
+  {name:'The Outer Mole',
+   line:'A breakwater thrown up in months, not years. It is still holding.',
+   reveal:'Built by five different crews at once. The stonework changes every hundred paces, and every style is from a city we have already found.',
+   req:[{c:2,t:5,n:2},{c:0,t:5,n:1}], coins:280, xp:60},
+  {name:'The Signal Mast',
+   line:'Flags for every port on the coast, and one set nobody recognises.',
+   reveal:'The unknown set is a reply. Somebody here was answering, and answering for years.',
+   req:[{c:0,t:6,n:2},{c:3,t:5,n:1},{c:2,t:6,n:1}], coins:520, xp:90},
+  {name:'The Warrant House',
+   line:'Every ship that left was recorded, sealed and countersigned.',
+   reveal:'The seals come from four different cities. This harbour was working for all of them at once.',
+   req:[{c:1,t:7,n:2},{c:0,t:7,n:1},{c:2,t:7,n:1}], coins:850, xp:130},
+  {name:'The Pilot\u2019s Table',
+   line:'Charts of water that does not appear on any other map.',
+   reveal:'The bearings all converge on one point, far past the shelf. They were not fleeing. They were aiming.',
+   req:[{c:3,t:7,n:2},{c:4,t:4,n:1},{c:1,t:8,n:1}], coins:1350, xp:180},
+  {name:'The Waiting Hull',
+   line:'One ship on the stocks, finished except for her planking.',
+   reveal:'She was never launched. The last crews chose to stay and finish the harbour instead.',
+   req:[{c:4,t:6,n:2},{c:2,t:9,n:1},{c:0,t:8,n:2}], coins:2100, xp:240},
+  {name:'The Long Quay',
+   line:'A pier that runs out past the light, straight into deep water.',
+   reveal:'It does not end. It goes down, and it is still being built, and the marks are fresh.',
+   req:[{c:2,t:10,n:1},{c:1,t:10,n:1},{c:0,t:10,n:1}], coins:4200, xp:360}
+];
+var R5_SITE=[
+  {name:'The Outer Mole',    what:'relic chance on partial gear'},
+  {name:'The Signal Mast',   what:'charge regen speed'},
+  {name:'The Warrant House', what:'charge capacity'},
+  {name:'The Pilot\u2019s Table', what:'dive speed'},
+  {name:'The Waiting Hull',  what:'reveals the next relic'},
+  {name:'The Long Quay',     what:'coins from dives'}
+];
+var R5_RELICS=[
+  {name:'Foundation Coin', site:0,
+   story:'Set under the first stone of the mole for luck. It was minted in Thalassa, and it was already old when the mole was begun.'},
+  {name:'Mason\u2019s Rule', site:0,
+   story:'Marked in five different measures along its length, one for each crew. Somebody had to translate between them daily.'},
+  {name:'Reply Flag', site:1,
+   story:'The last flag of the unknown set, folded and stowed. Its pattern matches nothing on this coast, and it is worn from years of use.'},
+  {name:'Mast Halyard Cleat', site:1,
+   story:'Raised and lowered signals for two decades. The rope groove is cut deepest at the height of a single, repeated message.'},
+  {name:'Kiln Coast Seal', site:2,
+   story:'A glassmaker\u2019s warrant seal, pressed here in wax. The glass city was sending ships to this harbour long after it should have been under water.'},
+  {name:'Saltworks Warrant', site:2,
+   story:'Authorises a cargo of salt with no destination named. Countersigned by a harbour master who signed nothing else that year.'},
+  {name:'Convergence Chart', site:3,
+   story:'Every bearing on it points to one place beyond the shelf. The ink is fresh in some lines and centuries old in others.'},
+  {name:'Pilot\u2019s Compass', site:3,
+   story:'Boxed, gimballed and true. Brought here from the Ice Roads, where a compass needle pointed only down.'},
+  {name:'Keel Blessing Nail', site:4,
+   story:'Driven into a new keel for a safe voyage. This one was driven, then withdrawn, then driven again in the same hole.'},
+  {name:'Shipwright\u2019s Note', site:4,
+   story:'Instructions for finishing the hull, left on her frame. The final line reads: not yet, and not for us.'},
+  {name:'Quay Lantern', site:5,
+   story:'The last light on the long pier, green rather than white. Green means the way is clear, and it was left burning.'},
+  {name:'The Harbour Ledger', site:5,
+   story:'Every soul who passed through, from every city, written in one hand. The final page lists the five cities by name and gives a total. The total is larger than all of them together.'}
+];
+var R5_CURIOS=[
+  {name:'Sail Needle',     note:'For stitching heavy canvas. Bent from being pushed through more layers than it was made for.'},
+  {name:'Wax Stick',       note:'Sealing wax, deep red. Used down to a stub, and the stub was kept.'},
+  {name:'Mooring Whip',    note:'Threw a light line to a ship coming in. Coiled ready, on a bollard nobody used again.'},
+  {name:'Tide Board',      note:'Chalked with the day\u2019s high water. The last figure written is not a time.'},
+  {name:'Ship\u2019s Biscuit', note:'Hard as slate, packed for a long voyage. Untouched, and there are crates of it.'},
+  {name:'Bearing Peg',     note:'Marked a heading on the pilot\u2019s table. Left in the hole for a course nobody sailed.'},
+  {name:'Rope Fid',        note:'For splicing heavy line. Polished by use, and left lying exactly parallel to the quay edge.'},
+  {name:'Harbour Whistle', note:'Three notes for departure, one for return. The return note is unworn.'},
+  {name:'Tally Board',     note:'Counted souls aboard before casting off. The chalk marks were never wiped.'},
+  {name:'Pitch Ladle',     note:'For sealing seams with hot pitch. Still holds a skin of pitch, cooled in place.'},
+  {name:'Signal Lens',     note:'Coloured glass for night signals. The green one is scratched from use, the red one is not.'},
+  {name:'Shroud Toggle',   note:'Tensioned a mast\u2019s standing rigging. Found slack, on a mast that never sailed.'},
+  {name:'Ballast Stone',   note:'One of thousands in the hold of the waiting hull. Marked with a mason\u2019s sign from the ice.'},
+  {name:'Warrant Blank',   note:'An unsigned form for a departing ship. A whole ream of them, and not one filled in.'},
+  {name:'Deck Prism',      note:'Set into a deck to light the hold below. Cut from Kiln Coast glass, and still perfectly clear.'},
+  {name:'Pilot\u2019s Chalk', note:'For marking corrections on charts. Worn to nothing, and the corrections all go the same way.'},
+  {name:'Quay Ring',       note:'A mooring ring set into the last stone of the long pier. It is wet, and the pier is not.'},
+  {name:'Green Glass Chip',note:'Broken from a signal lens. Held to the light it shows the pier continuing where the pier ends.'}
+];
+var R5_DECOR=[
+  {id:'r5post',  name:'Mooring Post', price:80,   val:8,   bon:2,  set:0},
+  {id:'r5jar',   name:'Pitch Jar',    price:150,  val:15,  bon:3,  set:1},
+  {id:'r5lamp',  name:'Quay Lamp',    price:280,  val:28,  bon:5,  set:0},
+  {id:'r5bench', name:'Dock Bench',   price:480,  val:48,  bon:8,  set:0},
+  {id:'r5crate', name:'Cargo Crate',  price:820,  val:80,  bon:12, set:1},
+  {id:'r5figure',name:'Figurehead',   price:1500, val:150, bon:19, set:2},
+  {id:'r5arch',  name:'Harbour Arch', price:2800, val:280, bon:28, set:2},
+  {id:'r5mast',  name:'Signal Mast',  price:5000, val:500, bon:40, set:1},
+  {id:'r5column',name:'Stone Bollard',price:7500, val:750, bon:44, set:2},
+  {id:'r5mosaic',name:'Chart Mosaic', price:11000,val:1100,bon:48, set:0},
+  {id:'r5boat',  name:'Harbour Boat', price:16000,val:1600,bon:52, set:0},
+  {id:'r5anchor',name:'Great Anchor', price:23000,val:2300,bon:56, set:1},
+  {id:'r5light', name:'Green Beacon', price:33000,val:3300,bon:60, set:2}
+];
+var R5_SETS=[
+  {name:'The Dockside',    items:[0,2,3],   bon:15, hint:'Mooring Post \u00b7 Quay Lamp \u00b7 Dock Bench'},
+  {name:'The Cargo Line',  items:[1,4,7],   bon:25, hint:'Pitch Jar \u00b7 Cargo Crate \u00b7 Signal Mast'},
+  {name:'The Ship Row',    items:[5,6],     bon:20, hint:'Figurehead \u00b7 Harbour Arch'},
+  {name:'The Stone Walk',  items:[8,12],    bon:22, hint:'Stone Bollard \u00b7 Green Beacon'},
+  {name:'The Last Fleet',  items:[9,10,11], bon:30, hint:'Chart Mosaic \u00b7 Harbour Boat \u00b7 Great Anchor'}
+];
+var R5_SPEECH=[
+  ['This breakwater went up in months. Five crews at once, by the look of the stone.',
+   'Every style here is from a city we have already stood in. They all sent people.'],
+  ['Flags for every port on the coast, and one set I do not know.',
+   'It is a reply, not a call. Somebody here was answering, for years.'],
+  ['Every departure sealed and countersigned. Careful work, to the last day.',
+   'Four cities\u2019 seals in one ledger. This harbour served all of them at once.'],
+  ['Charts of water that is on no other map.',
+   'All the bearings meet at one point past the shelf. They were not running. They were aiming.'],
+  ['One hull on the stocks, finished but for her planking.',
+   'She was never launched. The last crews stayed to finish the harbour instead.'],
+  ['The pier runs out past the light and keeps going.',
+   'It does not end. It goes down, it is still being built, and the tool marks are fresh.']
+];
+
 REGIONS[3].musicMode='iceroads';
+
+REGIONS[4].chapters=R5_CHAPTERS;
+REGIONS[4].relics=R5_RELICS;
+REGIONS[4].curios=R5_CURIOS;
+REGIONS[4].siteBonus=R5_SITE;
+REGIONS[4].chains=R5_CHAINS;
+REGIONS[4].tierNames=R5_TIERS;
+REGIONS[4].decor=R5_DECOR;
+REGIONS[4].sets=R5_SETS;
+REGIONS[4].speech=R5_SPEECH;
+REGIONS[4].musicMode='harbour';
+
 
 
 
@@ -5661,7 +6448,7 @@ function checkAchievements(){
 }
 
 /* ================= ОБЛАЧНЫЙ РЕЙТИНГ ================= */
-var FB_URL='';                     // <— сюда вставить https://ваш-проект.firebaseio.com
+var FB_URL='https://sunken-city-4a06c-default-rtdb.europe-west1.firebasedatabase.app';   // адрес базы (без косой черты в конце!)
 var SYNC='Offline', TOPLIST=[], topOpen=false;
 var LAST_PUSH=0, LAST_PUSHED_SCORE=-1, PUSH_MIN_MS=60000;
 function pushScore(force){
@@ -5732,6 +6519,26 @@ function note(freq,dur,gain,type){
 var MUSIC_STEP_MS=320;                          // вдвое чаще прежнего — партия живее
 /* Чистая функция расписания: и играет в браузере, и рендерится в WAV (раздел 5).
    Слои: бас — пад — арпеджио — колокол — «пузырьки». Громкость дышит по 16 шагов. */
+function musicHarbour(step){                     // пятый город: эолийский, широкий и прощальный
+  var out=[], root=174.61, sc=[0,2,3,5,7,8,10,12,14,15];
+  function f(s,o){ return root*Math.pow(2,s/12)*Math.pow(2,o||0); }
+  var bar=Math.floor(step/8), inBar=step%8;
+  var breath=0.66+0.34*Math.sin(step/18*Math.PI);
+  var deg=(bar*2)%sc.length;
+  if(inBar===0) out.push({f:f(sc[deg],-1), d:3.8, g:0.085*breath, w:'triangle'});
+  if(inBar===4) out.push({f:f(sc[(deg+4)%sc.length],-1), d:3.0, g:0.06*breath, w:'triangle'});
+  if(inBar===0||inBar===4){
+    out.push({f:f(sc[deg]), d:4.0, g:0.052*breath, w:'sine'});
+    out.push({f:f(sc[(deg+2)%sc.length]), d:3.6, g:0.042*breath, w:'sine'});
+    out.push({f:f(sc[(deg+4)%sc.length]), d:3.2, g:0.032*breath, w:'sine'});
+  }
+  var arp=[0,2,4,5,7,5,4,2][inBar];
+  out.push({f:f(sc[(deg+arp)%sc.length],1), d:0.85, g:0.055*breath, w:'sine'});
+  if(step%4===0) out.push({f:f(sc[(bar+inBar)%sc.length],2), d:2.2, g:0.045*breath, w:'sine'});
+  if(inBar===7) out.push({f:f(sc[(deg+7)%sc.length],2), d:0.6, g:0.03*breath, w:'sine'});
+  if(step%32===31) out.push({f:f(sc[0],-1), d:4.6, g:0.06*breath, w:'triangle'});
+  return out;
+}
 function musicIce(step){                         // четвёртый город: лидийский, светлый и пустой
   var out=[], root=196.00, sc=[0,2,4,6,7,9,11,12,14,16];
   function f(s,o){ return root*Math.pow(2,s/12)*Math.pow(2,o||0); }
@@ -5798,6 +6605,8 @@ function musicEvents(step, mode){
     return musicKiln(step);
   if(mode==='iceroads')
     return musicIce(step);
+  if(mode==='harbour')
+    return musicHarbour(step);
   var M=(mode==='city')
     ? {root:174.61, sc:[0,2,4,7,9,11,12,14,16], sw:5, bell:[12,16,19]}     // город: светлее
     : (mode==='museum')
@@ -7266,7 +8075,7 @@ window.__DG={
   setNow:function(t){ NOW=t; }, siteUnlocked:siteUnlocked, plaque:plaque, curioBox:curioBox, curioPages:curioPages, curioPage:curioPage, curioAt:curioAt, CUR_PER:CUR_PER,
   siteDecor:siteDecor, siteBonus:siteBonus, siteBonusTenths:siteBonusTenths, siteBonusText:siteBonusText, SITE_BONUS_CAP:SITE_BONUS_CAP, population:population, setsAt:setsAt, setBonusTenths:setBonusTenths,
   REGIONS:REGIONS, region:region, regionIdx:regionIdx, regionUnlocked:regionUnlocked,
-  worldCard:worldCard, travelTo:travelTo, musicSalt:musicSalt, musicKiln:musicKiln, musicIce:musicIce,
+  worldCard:worldCard, travelTo:travelTo, musicSalt:musicSalt, musicKiln:musicKiln, musicIce:musicIce, musicHarbour:musicHarbour,
   ACHS:ACHS, achDone:achDone, achCount:achCount, achProgress:achProgress,
   checkAchievements:checkAchievements, achRow:achRow, achBanner:achBanner,
   get ACHFX(){ return ACHFX; }, sfxAchievement:sfxAchievement,
