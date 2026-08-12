@@ -6,7 +6,7 @@
       уже открытую страницу.
    3) Кэшируем только иконки и манифест.
    КЛЮЧ КЭША ПОДНИМАТЬ ПРИ КАЖДОЙ ПРАВКЕ. */
-const CACHE = 'sunken-v6.6';
+const CACHE = 'sunken-v6.9';
 const ICONS = ['icon-180.png','icon-512.png','manifest.json'];
 
 self.addEventListener('install', e => {
