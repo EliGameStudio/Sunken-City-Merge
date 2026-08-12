@@ -4495,7 +4495,7 @@ function bakeBG(){
 /* ================= ГЕОМЕТРИЯ ЭКРАНА ================= */
 var HUD_H=126, COLS=6, ROWS=8, CELL=80, BX=30, BY=188;
 var BOARD_W=COLS*CELL, BOARD_H=ROWS*CELL, BOARD_B=BY+BOARD_H;   // 828
-var VERSION='v6.6';
+var VERSION='v6.9';
 
 var BTN={
   nav_game :{x:10, y:898, w:124, h:52, label:'DIVE'},
@@ -4504,9 +4504,10 @@ var BTN={
   nav_shop :{x:400,y:898, w:124, h:52, label:'SHOP'},
   mute     :{x:482,y:6,   w:44,  h:34, label:'SND'},
   diag     :{x:430,y:6,   w:44,  h:34, label:'i'},
-  closediag:{x:180,y:846, w:180, h:44, label:'CLOSE'},
-  backup   :{x:40, y:792, w:210, h:46, label:'BACKUP'},
-  restore  :{x:290,y:792, w:210, h:46, label:'RESTORE'},
+  cloudtest:{x:40, y:782, w:460, h:36, label:'TEST CLOUD'},
+  closediag:{x:180,y:870, w:180, h:36, label:'CLOSE'},
+  backup   :{x:40, y:824, w:210, h:40, label:'BACKUP'},
+  restore  :{x:290,y:824, w:210, h:40, label:'RESTORE'},
   worlds   :{x:14, y:226, w:165, h:42, label:'WORLDS'},
   achs     :{x:187,y:226, w:166, h:42, label:'AWARDS'},
   closeach :{x:180,y:854, w:180, h:40, label:'CLOSE'},
@@ -6474,27 +6475,62 @@ function pushScore(force){
   }catch(e){ SYNC='Offline'; FB_ERR='throw'; }
   return true;
 }
+function fbSelfTest(){
+  /* Пробуем по очереди: обычный GET, затем GET с no-cors.
+     Если первый падает, а второй проходит — запрос блокирует CORS/расширение,
+     а не отсутствие сети. Это разные болезни и лечатся по-разному. */
+  if(!FB_URL){ FB_ERR='no url'; return; }
+  FB_ERR='testing...';
+  var url=FB_URL+'/.json?shallow=true';
+  fetch(url,{cache:'no-store'})
+  .then(function(r){
+    if(r.status===401){ FB_ERR='база отвечает, чтение закрыто правилами'; return null; }
+    if(!r.ok){ FB_ERR='база ответила HTTP '+r.status; return null; }
+    return r.json();
+  })
+  .then(function(o){
+    if(o===null) return;
+    FB_ERR='чтение работает, узлов: '+(o?Object.keys(o).length:0);
+  })
+  .catch(function(e){
+    /* второй заход: no-cors покажет, доходит ли пакет до сервера вообще */
+    fetch(url,{mode:'no-cors',cache:'no-store'})
+    .then(function(){ FB_ERR='сеть есть, но ответ блокирует CORS \u2014 проверь правила базы'; })
+    .catch(function(){ FB_ERR='до базы не достучаться: нет сети или адрес неверен'; });
+  });
+}
 function fetchTop(){
-  if(!FB_URL){ TOPLIST=[]; SYNC='Offline'; return; }
-  SYNC='Syncing';
+  if(!FB_URL){ TOPLIST=[]; SYNC='Offline'; FB_ERR='no url'; return; }
+  if(SYNC!=='Synced') SYNC='Syncing';
   try{
-    fetch(FB_URL+'/scores_sunken1.json',{cache:'no-store'}).then(function(r){return r.json();})
+    /* Читаем ТОЛЬКО десять лучших: без limitToLast база отдаёт весь узел,
+       и запрос тяжелеет с каждой записью. orderBy требует .indexOn в правилах. */
+    var q1=FB_URL+'/scores_sunken1.json?orderBy=%22score%22&limitToLast=50';
+    fetch(q1,{cache:'no-store'})
+    .then(function(r){
+      if(!r.ok){ FB_ERR='read HTTP '+r.status; throw new Error('http'); }
+      return r.json();
+    })
     .then(function(o){
-      var a=[];
-      for(var k in o) if(o[k]&&typeof o[k]==='object') a.push(o[k]);
-      var best={};
-      for(var q=0;q<a.length;q++){                    // один игрок — одна строка, лучшая
-        var nm=String(a[q].name||'').slice(0,12);
+      var a=[], k;
+      for(k in o) if(o[k]&&typeof o[k]==='object') a.push(o[k]);
+      var best={}, qq;
+      for(qq=0;qq<a.length;qq++){                    // один игрок — одна строка, лучшая
+        var nm=String(a[qq].name||'').slice(0,12);
         if(!nm) continue;
-        if(!best[nm]||(+a[q].score||0)>(+best[nm].score||0)) best[nm]=a[q];
+        if(!best[nm]||(+a[qq].score||0)>(+best[nm].score||0)) best[nm]=a[qq];
       }
       a=[]; for(var nm2 in best) a.push(best[nm2]);
       a.sort(function(x,y){return (y.score||0)-(x.score||0);});
-      TOPLIST=a.slice(0,10); SYNC='Synced';
-    }).catch(function(e){ SYNC='Offline';
-      FB_ERR='read'+(e&&e.message?(': '+String(e.message).slice(0,40)):''); });
-  }catch(e){ SYNC='Offline'; FB_ERR='throw'; }
+      TOPLIST=a.slice(0,10); SYNC='Synced'; FB_ERR='';
+    }).catch(function(e){
+      /* отказ ЧТЕНИЯ не должен гасить успешную запись */
+      if(SYNC!=='Synced') SYNC='Offline';
+      if(!FB_ERR) FB_ERR='read: '+String(e&&e.message||'fail').slice(0,40);
+    });
+  }catch(e){ SYNC='Offline'; FB_ERR='read throw'; }
 }
+
 
 /* ================= ЗВУК ================= */
 var AC=null, MG=null, musicStep=0, lastMusic=0;
@@ -7399,7 +7435,7 @@ function drawDiag(g){
   row('expeditions funded', st.fundBought||0);
   row('parts installed', st.parts);
   row('dives sent', st.dives);
-  row('relics found', st.relics+'/'+A_RELICS.length);
+  row('relics found', relicsFound()+'/'+A_RELICS.length+'  (всего '+st.relics+')');
   y+=8;
   row('coins earned', st.coinsIn);
   row('coins spent', st.coinsOut);
@@ -7413,9 +7449,11 @@ function drawDiag(g){
   row('canvas on screen', Math.round(rr.width)+'x'+Math.round(rr.height), FIT_OK?'#9bf7a8':'#ff9b9b');
   row('layout retries', FIT_TRIES, FIT_TRIES>6?'#ffd487':'#ffffff');
   row('service worker', ('serviceWorker' in navigator)?(navigator.serviceWorker.controller?'active':'idle'):'none');
-  row('cloud', SYNC+(FB_ERR?(' \u2014 '+FB_ERR):''), (SYNC==='Synced')?'#9bf7a8':'#ffd487');
+  row('cloud', SYNC, (SYNC==='Synced')?'#9bf7a8':'#ffd487');
+  if(FB_ERR){ wrap(g, FB_ERR, 42, y, 11, '#ffd487', 44, 14); y+=(FB_ERR.length>44?28:14); }
   y+=10;
-  text(g,'BACKUP shows a code — keep it. RESTORE takes it back.', L, y, 12, '#bfe9f5');
+
+  button(g,BTN.cloudtest,false,'rgba(60,60,140,0.95)');
   button(g,BTN.backup,false,'rgba(30,120,90,0.95)');
   button(g,BTN.restore,false,'rgba(120,80,30,0.95)');
   button(g,BTN.closediag,false);
@@ -7767,6 +7805,7 @@ function onDown(x,y){
   if(S.screen==='name'){ if(inBtn(BTN.namedone,x,y)) startGameFromName(); return; }
   if(S.diagOpen){
     if(inBtn(BTN.closediag,x,y)){ S.diagOpen=false; save(); return; }
+    if(inBtn(BTN.cloudtest,x,y)){ fbSelfTest(); return; }
     if(inBtn(BTN.backup,x,y)){
       var code=exportSave();
       try{ if(window.prompt) window.prompt('Copy this backup code:', code); }catch(e){}
@@ -8062,7 +8101,7 @@ window.__DG={
   helpOpen:function(){ return helpOpen; }, setHelp:function(v){ helpOpen=!!v; },
   pushScore:pushScore, fetchTop:fetchTop, FB_SET:function(u){ FB_URL=u; },
   syncState:function(){ return SYNC; }, topList:function(){ return TOPLIST; },
-  fbError:function(){ return FB_ERR; },
+  fbError:function(){ return FB_ERR; }, fbSelfTest:fbSelfTest,
   buyFund:buyFund, fundPrice:fundPrice, fundExpPts:fundExpPts, fundScore:fundScore,
   EVENTS:EVENTS, SEASONAL:SEASONAL, PRIZES:PRIZES, prizeSprite:prizeSprite, prizesFound:prizesFound,
   ARMOUR_NAMES:ARMOUR_NAMES, ARMOUR_MAX:ARMOUR_MAX, ARMOUR_CHANCE:ARMOUR_CHANCE,
@@ -8098,7 +8137,7 @@ window.__DG={
     hud:{x:0,y:0,w:VW,h:HUD_H},
     coins:{x:SELL.x,y:SELL.y,w:SELL.w,h:SELL.h},
     mute:BTN.mute, diag:BTN.diag, diver:DIVER,
-    diagButtons:[BTN.backup,BTN.restore,BTN.closediag],
+    diagButtons:[BTN.cloudtest,BTN.backup,BTN.restore,BTN.closediag],
     eventBtn:BTN.event, eventBoxes:[evBox(0),evBox(5)], closeevt:BTN.closeevt,
     board:{x:BX,y:BY,w:BOARD_W,h:BOARD_H},
     cards:[cardBox(0),cardBox(1),cardBox(2),cardBox(3)],
